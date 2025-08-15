@@ -127,28 +127,28 @@ API token for authentication with the Tiptap collaboration service. While not st
 node /path/to/build/index.js BASE_URL <url> API_TOKEN <token>
 ```
 
-## Client Usage
+## Host Usage
 
-Add this server to your Claude, Windsurf, or any other client the relevant syntax. An example:
+Add this server to your Claude, Windsurf, or any other host with the relevant syntax. An example:
 
 ```json
-{
-  "mcpServers": {
-    "user": {
-      "tiptap-collaboration": {
-        "command": "node",
-        "args": [
-          "/path/to/tiptap-collaboration-mcp/build/index.js",
-          "BASE_URL",
-          "http://localhost:8080",
-          "API_TOKEN",
-          "your-actual-api-token"
-        ]
-      }
-    }
-  }
+"tiptap-collaboration": {
+  "command": "node",
+  "args": [
+    "/path/to/tiptap-collaboration-mcp/build/index.js",
+    "BASE_URL",
+    "http://localhost:8080",
+    "API_TOKEN",
+    "your-actual-api-token"
+  ]
 }
 ```
+
+## Resources
+
+- [ModelContextProtocol](https://modelcontextprotocol.io)
+- [ModelContextProtocol SDK](https://github.com/modelcontextprotocol/typescript-sdk)
+- [Tiptap Collaboration API](https://github.com/tiptap-collaboration/api)
 
 ## License
 
