@@ -9,7 +9,8 @@
     "dev": "tsx watch src/server.ts",
     "clean": "rm -rf build",
     "test": "vitest --run",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "inspect": "npx @modelcontextprotocol/inspector tsx src/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +21,9 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@modelcontextprotocol/inspector": "^0.16.5",
     "@types/node": "^24.2.1",
+    "tsx": "^4.20.4",
     "typescript": "^5.9.2",
     "vitest": "^2.1.9"
   },
