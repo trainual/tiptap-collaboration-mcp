@@ -5,42 +5,42 @@ A Model Context Protocol (MCP) server that provides tools for interacting with T
 ## Tools Available
 
 ### Health & Statistics
-#### `get_collaboration_health`
+#### `get-collaboration-health`
 Check the health status of the Tiptap collaboration service.
 - **Parameters**: None
 - **Returns**: Health status information (DB, Redis, License status)
 
-#### `get_server_statistics`
+#### `get-server-statistics`
 Get server-wide usage statistics.
 - **Parameters**: None
 - **Returns**: Total documents, connections, concurrent users, version info
 
-#### `get_document_statistics`
+#### `get-document-statistics`
 Get real-time statistics for a specific document.
 - **Parameters**:
   - `id` (string): Document ID
 - **Returns**: Current connections, connected IPs, document activity
 
 ### Document Management
-#### `create_document`
+#### `create-document`
 Create a new collaborative document.
 - **Parameters**:
   - `name` (string): Name of the document
-  - `content` (string, optional): Initial content for the document
+  - `content` (object, optional): Initial content for the document in Tiptap JSON format
 - **Returns**: Created document information
 
-#### `get_document`
+#### `get-document`
 Retrieve information about a specific collaborative document.
 - **Parameters**:
   - `id` (string): ID of the document to retrieve
 - **Returns**: Document information and content
 
-#### `list_documents`
+#### `list-documents`
 List all available collaborative documents.
 - **Parameters**: None
 - **Returns**: Array of all documents in the system
 
-#### `update_document`
+#### `update-document`
 Update a collaborative document with new content.
 - **Parameters**:
   - `id` (string): Document ID
@@ -48,28 +48,28 @@ Update a collaborative document with new content.
   - `mode` (string, optional): Update mode - "replace" or "append" (default: "replace")
 - **Returns**: Updated document information
 
-#### `delete_document`
+#### `delete-document`
 Delete a collaborative document.
 - **Parameters**:
   - `id` (string): ID of the document to delete
 - **Returns**: Deletion confirmation
 
 ### Advanced Document Operations
-#### `duplicate_document`
+#### `duplicate-document`
 Duplicate an existing collaborative document.
 - **Parameters**:
   - `sourceId` (string): ID of the source document to duplicate
   - `targetId` (string): ID for the new duplicated document
 - **Returns**: Duplicated document information
 
-#### `encrypt_document`
+#### `encrypt-document`
 Encrypt a collaborative document using Base64 encryption.
 - **Parameters**:
   - `id` (string): Document ID
   - `content` (object): Document content in Tiptap JSON format to encrypt
 - **Returns**: Encryption confirmation
 
-#### `search_documents`
+#### `search-documents`
 Search documents using semantic search (requires Tiptap Semantic Search).
 - **Parameters**:
   - `query` (string): Search query
@@ -77,7 +77,7 @@ Search documents using semantic search (requires Tiptap Semantic Search).
 - **Returns**: Array of matching documents with relevance scores
 
 ### Markdown Conversion
-#### `import_markdown`
+#### `import-markdown`
 Convert Markdown content to Tiptap JSON format.
 - **Parameters**:
   - `appId` (string): Your Tiptap App ID for the conversion service
@@ -85,7 +85,7 @@ Convert Markdown content to Tiptap JSON format.
   - `format` (string, optional): "md" or "gfm" (GitHub Flavored Markdown, default: "md")
 - **Returns**: Converted Tiptap JSON content
 
-#### `export_markdown`
+#### `export-markdown`
 Convert Tiptap JSON content to Markdown format.
 - **Parameters**:
   - `appId` (string): Your Tiptap App ID for the conversion service
@@ -94,7 +94,7 @@ Convert Tiptap JSON content to Markdown format.
 - **Returns**: Converted Markdown content
 
 ### Batch Operations
-#### `batch_import_documents`
+#### `batch-import-documents`
 Import multiple documents in bulk using a predefined JSON structure.
 - **Parameters**:
   - `documents` (array): Array of document arrays, where each inner array represents versions of a single document
