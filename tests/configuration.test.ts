@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import registerGetCollaborationHealth from '../src/tools/get_collaboration_health.js';
+import registerGetCollaborationHealth from '../src/tools/get-collaboration-health.js';
 
 describe('Configuration Tests', () => {
   let server: McpServer;

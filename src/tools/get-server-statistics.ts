@@ -1,51 +1,44 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
 
-export default function registerGetDocument(
+export default function registerGetServerStatistics(
   server: McpServer,
   getBaseUrl: () => string,
   getToken: () => string | undefined
 ) {
   server.tool(
-    'get_document',
-    'Get information about a collaborative document',
-    {
-      id: z.string().describe('ID of the document to retrieve'),
-    },
-    async ({ id }) => {
+    'get-server-statistics',
+    'Get server-wide statistics including total documents, connections, and usage metrics',
+    {},
+    async () => {
       try {
         const headers: Record<string, string> = {
           'User-Agent': 'tiptap-collaboration-mcp',
           'Content-Type': 'application/json',
         };
-        
+
         const token = getToken();
         if (token) headers['Authorization'] = token;
 
-        const response = await fetch(`${getBaseUrl()}/api/documents/${id}`, { headers });
-        
+        const response = await fetch(`${getBaseUrl()}/api/statistics`, { headers });
+
         if (!response.ok) {
           return {
             content: [
               {
                 type: 'text',
-                text: `Document with ID ${id} not found. HTTP error: ${response.status} ${response.statusText}`,
+                text: `Failed to retrieve server statistics. HTTP error: ${response.status} ${response.statusText}`,
               },
             ],
           };
         }
 
-        const documentData = await response.json();
+        const statistics = await response.json();
 
         return {
           content: [
             {
               type: 'text',
-              text: `Document Information: ${JSON.stringify(
-                documentData,
-                null,
-                2
-              )}`,
+              text: `Server Statistics: ${JSON.stringify(statistics, null, 2)}`,
             },
           ],
         };
@@ -54,7 +47,7 @@ export default function registerGetDocument(
           content: [
             {
               type: 'text',
-              text: `Error retrieving document: ${
+              text: `Error retrieving server statistics: ${
                 error instanceof Error ? error.message : 'Unknown error'
               }`,
             },

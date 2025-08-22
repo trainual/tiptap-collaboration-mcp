@@ -1,13 +1,13 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-export default function registerGetServerStatistics(
+export default function registerGetCollaborationHealth(
   server: McpServer,
   getBaseUrl: () => string,
   getToken: () => string | undefined
 ) {
   server.tool(
-    'get_server_statistics',
-    'Get server-wide statistics including total documents, connections, and usage metrics',
+    'get-collaboration-health',
+    'Check Tiptap collaboration service health status',
     {},
     async () => {
       try {
@@ -15,30 +15,26 @@ export default function registerGetServerStatistics(
           'User-Agent': 'tiptap-collaboration-mcp',
           'Content-Type': 'application/json',
         };
-
         const token = getToken();
-        if (token) headers['Authorization'] = token;
+        if (token) headers.Authorization = token;
 
-        const response = await fetch(`${getBaseUrl()}/api/statistics`, { headers });
-
+        const response = await fetch(`${getBaseUrl()}/health`, { headers });
         if (!response.ok) {
           return {
             content: [
               {
                 type: 'text',
-                text: `Failed to retrieve server statistics. HTTP error: ${response.status} ${response.statusText}`,
+                text: `Health check HTTP error: ${response.status} ${response.statusText}`,
               },
             ],
           };
         }
 
-        const statistics = await response.json();
-
         return {
           content: [
             {
               type: 'text',
-              text: `Server Statistics: ${JSON.stringify(statistics, null, 2)}`,
+              text: `Health check response: ${await response.text()}`,
             },
           ],
         };
@@ -47,7 +43,7 @@ export default function registerGetServerStatistics(
           content: [
             {
               type: 'text',
-              text: `Error retrieving server statistics: ${
+              text: `Error connecting to Tiptap collaboration service: ${
                 error instanceof Error ? error.message : 'Unknown error'
               }`,
             },

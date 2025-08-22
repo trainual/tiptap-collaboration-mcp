@@ -39,7 +39,7 @@ async function main() {
   }
 
   const transport = new StdioServerTransport();
-  console.log('Starting server...');
+  console.warn('Starting server...');
   await server.connect(transport);
 }
 

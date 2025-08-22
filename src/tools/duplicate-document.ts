@@ -7,7 +7,7 @@ export default function registerDuplicateDocument(
   getToken: () => string | undefined
 ) {
   server.tool(
-    'duplicate_document',
+    'duplicate-document',
     'Duplicate a collaborative document',
     {
       sourceId: z.string().describe('ID of the source document to duplicate'),

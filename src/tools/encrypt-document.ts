@@ -1,23 +1,19 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-export default function registerBatchImportDocuments(
+export default function registerEncryptDocument(
   server: McpServer,
   getBaseUrl: () => string,
   getToken: () => string | undefined
 ) {
   server.tool(
-    'batch_import_documents',
-    'Import multiple documents in bulk using a predefined JSON structure',
+    'encrypt-document',
+    'Encrypt a collaborative document using Base64 encryption',
     {
-      documents: z.array(z.array(z.object({
-        created_at: z.string().describe('Creation timestamp in ISO format'),
-        version: z.number().describe('Document version number'),
-        name: z.string().describe('Document name/identifier'),
-        tiptap_json: z.object({}).describe('Document content in Tiptap JSON format'),
-      }))).describe('Array of document arrays, where each inner array represents versions of a single document'),
+      id: z.string().describe('ID of the document to encrypt'),
+      content: z.object({}).describe('Document content in Tiptap JSON format to encrypt'),
     },
-    async ({ documents }) => {
+    async ({ id, content }) => {
       try {
         const headers: Record<string, string> = {
           'User-Agent': 'tiptap-collaboration-mcp',
@@ -27,19 +23,19 @@ export default function registerBatchImportDocuments(
         const token = getToken();
         if (token) headers['Authorization'] = token;
 
-        const response = await fetch(`${getBaseUrl()}/api/admin/batch-import`, {
-          method: 'PUT',
+        const response = await fetch(`${getBaseUrl()}/api/documents/${id}/encrypt`, {
+          method: 'POST',
           headers,
-          body: JSON.stringify(documents),
+          body: JSON.stringify(content),
         });
 
         if (!response.ok) {
-          if (response.status === 400) {
+          if (response.status === 404) {
             return {
               content: [
                 {
                   type: 'text',
-                  text: 'Invalid data provided for batch import. Please check the document structure and format.',
+                  text: `Document with ID ${id} not found.`,
                 },
               ],
             };
@@ -48,7 +44,7 @@ export default function registerBatchImportDocuments(
             content: [
               {
                 type: 'text',
-                text: `Failed to import documents. HTTP error: ${response.status} ${response.statusText}`,
+                text: `Failed to encrypt document. HTTP error: ${response.status} ${response.statusText}`,
               },
             ],
           };
@@ -58,7 +54,7 @@ export default function registerBatchImportDocuments(
           content: [
             {
               type: 'text',
-              text: `Successfully imported ${documents.length} document groups with their versions.`,
+              text: `Document with ID ${id} encrypted successfully.`,
             },
           ],
         };
@@ -67,7 +63,7 @@ export default function registerBatchImportDocuments(
           content: [
             {
               type: 'text',
-              text: `Error importing documents: ${
+              text: `Error encrypting document: ${
                 error instanceof Error ? error.message : 'Unknown error'
               }`,
             },

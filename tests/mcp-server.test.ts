@@ -2,20 +2,20 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 // Import all tool registration functions
-import registerGetCollaborationHealth from '../src/tools/get_collaboration_health.js';
-import registerListDocuments from '../src/tools/list_documents.js';
-import registerGetDocument from '../src/tools/get_document.js';
-import registerCreateDocument from '../src/tools/create_document.js';
-import registerUpdateDocument from '../src/tools/update_document.js';
-import registerDeleteDocument from '../src/tools/delete_document.js';
-import registerDuplicateDocument from '../src/tools/duplicate_document.js';
-import registerEncryptDocument from '../src/tools/encrypt_document.js';
-import registerSearchDocuments from '../src/tools/search_documents.js';
-import registerBatchImportDocuments from '../src/tools/batch_import_documents.js';
-import registerGetServerStatistics from '../src/tools/get_server_statistics.js';
-import registerGetDocumentStatistics from '../src/tools/get_document_statistics.js';
-import registerImportMarkdown from '../src/tools/import_markdown.js';
-import registerExportMarkdown from '../src/tools/export_markdown.js';
+import registerGetCollaborationHealth from '../src/tools/get-collaboration-health.js';
+import registerListDocuments from '../src/tools/list-documents.js';
+import registerGetDocument from '../src/tools/get-document.js';
+import registerCreateDocument from '../src/tools/create-document.js';
+import registerUpdateDocument from '../src/tools/update-document.js';
+import registerDeleteDocument from '../src/tools/delete-document.js';
+import registerDuplicateDocument from '../src/tools/duplicate-document.js';
+import registerEncryptDocument from '../src/tools/encrypt-document.js';
+import registerSearchDocuments from '../src/tools/search-documents.js';
+import registerBatchImportDocuments from '../src/tools/batch-import-documents.js';
+import registerGetServerStatistics from '../src/tools/get-server-statistics.js';
+import registerGetDocumentStatistics from '../src/tools/get-document-statistics.js';
+import registerImportMarkdown from '../src/tools/import-markdown.js';
+import registerExportMarkdown from '../src/tools/export-markdown.js';
 
 describe('MCP Server Integration Tests', () => {
   let server: McpServer;
@@ -109,20 +109,20 @@ describe('MCP Server Integration Tests', () => {
       registerExportMarkdown(server, getBaseUrl, getToken);
 
       const expectedTools = [
-        'get_collaboration_health',
-        'list_documents',
-        'get_document',
-        'create_document',
-        'update_document',
-        'delete_document',
-        'duplicate_document',
-        'encrypt_document',
-        'search_documents',
-        'batch_import_documents',
-        'get_server_statistics',
-        'get_document_statistics',
-        'import_markdown',
-        'export_markdown'
+        'get-collaboration-health',
+        'list-documents',
+        'get-document',
+        'create-document',
+        'update-document',
+        'delete-document',
+        'duplicate-document',
+        'encrypt-document',
+        'search-documents',
+        'batch-import-documents',
+        'get-server-statistics',
+        'get-document-statistics',
+        'import-markdown',
+        'export-markdown'
       ];
 
       expect(registeredTools).toEqual(expect.arrayContaining(expectedTools));
@@ -141,7 +141,7 @@ describe('MCP Server Integration Tests', () => {
 
       // Verify the tool was registered with proper MCP structure
       expect(server.tool).toHaveBeenCalledWith(
-        'create_document',
+        'create-document',
         'Create a new collaborative document',
         expect.any(Object), // Schema object
         expect.any(Function) // Handler function
@@ -152,7 +152,7 @@ describe('MCP Server Integration Tests', () => {
       registerGetDocument(server, getBaseUrl, getToken);
 
       const call = (server.tool as any).mock.calls.find(
-        (call: any) => call[0] === 'get_document'
+        (call: any) => call[0] === 'get-document'
       );
 
       expect(call).toBeDefined();
@@ -163,7 +163,7 @@ describe('MCP Server Integration Tests', () => {
       registerGetCollaborationHealth(server, getBaseUrl, getToken);
 
       const call = (server.tool as any).mock.calls.find(
-        (call: any) => call[0] === 'get_collaboration_health'
+        (call: any) => call[0] === 'get-collaboration-health'
       );
 
       expect(call).toBeDefined();
@@ -197,8 +197,8 @@ describe('MCP Server Integration Tests', () => {
         registerListDocuments(server, invalidGetBaseUrl, invalidGetToken);
       }).not.toThrow();
 
-      expect(registeredTools).toContain('get_collaboration_health');
-      expect(registeredTools).toContain('list_documents');
+      expect(registeredTools).toContain('get-collaboration-health');
+      expect(registeredTools).toContain('list-documents');
     });
   });
 
@@ -271,8 +271,8 @@ describe('MCP Server Integration Tests', () => {
         registerListDocuments(server, envGetBaseUrl, envGetToken);
       }).not.toThrow();
 
-      expect(registeredTools).toContain('get_collaboration_health');
-      expect(registeredTools).toContain('list_documents');
+      expect(registeredTools).toContain('get-collaboration-health');
+      expect(registeredTools).toContain('list-documents');
     });
   });
 });
