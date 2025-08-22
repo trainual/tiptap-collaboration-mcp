@@ -7,8 +7,8 @@ export default function registerExportMarkdown(
   getToken: () => string | undefined
 ) {
   server.tool(
-    'export_markdown',
-    'Convert Tiptap JSON content to Markdown format using the Tiptap Conversion API',
+    'export-markdown',
+    'Export Tiptap JSON content to Markdown format',
     {
       content: z.object({}).describe('Tiptap JSON content to convert to Markdown'),
       format: z.enum(['md', 'gfm']).optional().describe('Output format: md (standard) or gfm (GitHub Flavored Markdown). Default: md'),

@@ -1,19 +1,19 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-export default function registerEncryptDocument(
+export default function registerSearchDocuments(
   server: McpServer,
   getBaseUrl: () => string,
   getToken: () => string | undefined
 ) {
   server.tool(
-    'encrypt_document',
-    'Encrypt a collaborative document using Base64 encryption',
+    'search-documents',
+    'Perform semantic search across documents',
     {
-      id: z.string().describe('ID of the document to encrypt'),
-      content: z.object({}).describe('Document content in Tiptap JSON format to encrypt'),
+      query: z.string().describe('Search query for semantic document search'),
+      limit: z.number().optional().describe('Maximum number of results to return (default: 10)'),
     },
-    async ({ id, content }) => {
+    async ({ query, limit = 10 }) => {
       try {
         const headers: Record<string, string> = {
           'User-Agent': 'tiptap-collaboration-mcp',
@@ -23,38 +23,34 @@ export default function registerEncryptDocument(
         const token = getToken();
         if (token) headers['Authorization'] = token;
 
-        const response = await fetch(`${getBaseUrl()}/api/documents/${id}/encrypt`, {
+        const response = await fetch(`${getBaseUrl()}/api/search`, {
           method: 'POST',
           headers,
-          body: JSON.stringify(content),
+          body: JSON.stringify({ query, limit }),
         });
 
         if (!response.ok) {
-          if (response.status === 404) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `Document with ID ${id} not found.`,
-                },
-              ],
-            };
-          }
           return {
             content: [
               {
                 type: 'text',
-                text: `Failed to encrypt document. HTTP error: ${response.status} ${response.statusText}`,
+                text: `Search failed. HTTP error: ${response.status} ${response.statusText}. Note: Semantic search requires Tiptap Semantic Search to be enabled.`,
               },
             ],
           };
         }
 
+        const searchResults = await response.json();
+
         return {
           content: [
             {
               type: 'text',
-              text: `Document with ID ${id} encrypted successfully.`,
+              text: `Search results for "${query}": ${JSON.stringify(
+                searchResults,
+                null,
+                2
+              )}`,
             },
           ],
         };
@@ -63,7 +59,7 @@ export default function registerEncryptDocument(
           content: [
             {
               type: 'text',
-              text: `Error encrypting document: ${
+              text: `Error searching documents: ${
                 error instanceof Error ? error.message : 'Unknown error'
               }`,
             },

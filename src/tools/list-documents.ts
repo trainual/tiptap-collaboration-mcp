@@ -1,22 +1,15 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
 
-export default function registerCreateDocument(
+export default function registerListDocuments(
   server: McpServer,
   getBaseUrl: () => string,
   getToken: () => string | undefined
 ) {
   server.tool(
-    'create_document',
-    'Create a new collaborative document',
-    {
-      name: z.string().describe('Name of the document'),
-      content: z
-        .string()
-        .optional()
-        .describe('Initial content for the document'),
-    },
-    async ({ name, content = '' }) => {
+    'list-documents',
+    'List all collaboration documents',
+    {},
+    async () => {
       try {
         const headers: Record<string, string> = {
           'User-Agent': 'tiptap-collaboration-mcp',
@@ -26,34 +19,26 @@ export default function registerCreateDocument(
         const token = getToken();
         if (token) headers['Authorization'] = token;
 
-        const response = await fetch(`${getBaseUrl()}/api/documents`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ name, content }),
-        });
+        const response = await fetch(`${getBaseUrl()}/api/documents`, { headers });
 
         if (!response.ok) {
           return {
             content: [
               {
                 type: 'text',
-                text: `Failed to create document. HTTP error: ${response.status} ${response.statusText}`,
+                text: `Failed to retrieve documents list. HTTP error: ${response.status} ${response.statusText}`,
               },
             ],
           };
         }
 
-        const documentData = await response.json();
+        const documentsData = await response.json();
 
         return {
           content: [
             {
               type: 'text',
-              text: `Document created successfully: ${JSON.stringify(
-                documentData,
-                null,
-                2
-              )}`,
+              text: `Documents: ${JSON.stringify(documentsData, null, 2)}`,
             },
           ],
         };
@@ -62,7 +47,7 @@ export default function registerCreateDocument(
           content: [
             {
               type: 'text',
-              text: `Error creating document: ${
+              text: `Error listing documents: ${
                 error instanceof Error ? error.message : 'Unknown error'
               }`,
             },

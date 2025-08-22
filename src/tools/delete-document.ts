@@ -1,20 +1,18 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-export default function registerUpdateDocument(
+export default function registerDeleteDocument(
   server: McpServer,
   getBaseUrl: () => string,
   getToken: () => string | undefined
 ) {
   server.tool(
-    'update_document',
-    'Update a collaborative document with new content',
+    'delete-document',
+    'Delete a collaborative document',
     {
-      id: z.string().describe('ID of the document to update'),
-      content: z.object({}).describe('Document content in Tiptap JSON format'),
-      mode: z.enum(['replace', 'append']).optional().describe('Update mode: replace entire document or append content (default: replace)'),
+      id: z.string().describe('ID of the document to delete'),
     },
-    async ({ id, content, mode = 'replace' }) => {
+    async ({ id }) => {
       try {
         const headers: Record<string, string> = {
           'User-Agent': 'tiptap-collaboration-mcp',
@@ -24,10 +22,9 @@ export default function registerUpdateDocument(
         const token = getToken();
         if (token) headers['Authorization'] = token;
 
-        const response = await fetch(`${getBaseUrl()}/api/documents/${id}?mode=${mode}`, {
-          method: 'PATCH',
+        const response = await fetch(`${getBaseUrl()}/api/documents/${id}`, {
+          method: 'DELETE',
           headers,
-          body: JSON.stringify(content),
         });
 
         if (!response.ok) {
@@ -41,21 +38,11 @@ export default function registerUpdateDocument(
               ],
             };
           }
-          if (response.status === 422) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `Invalid payload or update cannot be applied to document ${id}.`,
-                },
-              ],
-            };
-          }
           return {
             content: [
               {
                 type: 'text',
-                text: `Failed to update document. HTTP error: ${response.status} ${response.statusText}`,
+                text: `Failed to delete document. HTTP error: ${response.status} ${response.statusText}`,
               },
             ],
           };
@@ -65,7 +52,7 @@ export default function registerUpdateDocument(
           content: [
             {
               type: 'text',
-              text: `Document with ID ${id} updated successfully using ${mode} mode.`,
+              text: `Document with ID ${id} deleted successfully.`,
             },
           ],
         };
@@ -74,7 +61,7 @@ export default function registerUpdateDocument(
           content: [
             {
               type: 'text',
-              text: `Error updating document: ${
+              text: `Error deleting document: ${
                 error instanceof Error ? error.message : 'Unknown error'
               }`,
             },
