@@ -2,6 +2,10 @@
 
 A Model Context Protocol (MCP) server that provides tools for interacting with Tiptap Collaboration services.
 
+<a href="https://glama.ai/mcp/servers/@trainual/tiptap-collaboration-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@trainual/tiptap-collaboration-mcp/badge" alt="Tiptap Collaboration Server MCP server" />
+</a>
+
 ## Tools Available
 
 ### Health & Statistics
