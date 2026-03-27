@@ -4,13 +4,22 @@ export function buildHeaders(
 ): Record<string, string> {
   const headers: Record<string, string> = {
     'User-Agent': 'tiptap-collaboration-mcp',
-    'Content-Type': 'application/json',
     ...extraHeaders,
   };
 
   if (token) headers['Authorization'] = token;
 
   return headers;
+}
+
+export function buildJsonHeaders(
+  token?: string,
+  extraHeaders?: Record<string, string>
+): Record<string, string> {
+  return buildHeaders(token, {
+    'Content-Type': 'application/json',
+    ...extraHeaders,
+  });
 }
 
 export function mcpError(text: string) {

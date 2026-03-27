@@ -4,12 +4,7 @@ A Model Context Protocol (MCP) server that provides tools for interacting with T
 
 ## Tools Available
 
-### Health & Statistics
-#### `get-collaboration-health`
-Check the health status of the Tiptap collaboration service.
-- **Parameters**: None
-- **Returns**: Health status information (DB, Redis, License status)
-
+### Statistics
 #### `get-server-statistics`
 Get server-wide usage statistics.
 - **Parameters**: None

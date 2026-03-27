@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import { buildJsonHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerUpdateDocument(
   server: McpServer,
@@ -24,10 +24,10 @@ export default function registerUpdateDocument(
     },
     async ({ id, content, mode = 'replace' }) => {
       try {
-        const headers = buildHeaders(getToken());
+        const headers = buildJsonHeaders(getToken());
 
         const response = await fetch(
-          `${getBaseUrl()}/api/documents/${id}?mode=${mode}`,
+          `${getBaseUrl()}/api/documents/${id}?format=json&mode=${mode}`,
           {
             method: 'PATCH',
             headers,

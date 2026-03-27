@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 // Import all tool registration functions
-import registerGetCollaborationHealth from '../src/tools/get-collaboration-health.js';
 import registerListDocuments from '../src/tools/list-documents.js';
 import registerGetDocument from '../src/tools/get-document.js';
 import registerCreateDocument from '../src/tools/create-document.js';
@@ -16,7 +15,6 @@ import registerImportMarkdown from '../src/tools/import-markdown.js';
 import registerExportMarkdown from '../src/tools/export-markdown.js';
 
 const allTools = [
-  registerGetCollaborationHealth,
   registerListDocuments,
   registerGetDocument,
   registerCreateDocument,
@@ -81,14 +79,13 @@ describe('MCP Server Integration Tests', () => {
 
     it('should register exactly 12 tools in total', () => {
       registerAll();
-      expect(registeredTools).toHaveLength(12);
+      expect(registeredTools).toHaveLength(11);
     });
 
     it('should register tools with expected names', () => {
       registerAll();
 
       const expectedTools = [
-        'get-collaboration-health',
         'list-documents',
         'get-document',
         'create-document',
@@ -136,10 +133,10 @@ describe('MCP Server Integration Tests', () => {
     });
 
     it('should register tools with proper handler functions', () => {
-      registerGetCollaborationHealth(server, getBaseUrl, getToken);
+      registerGetServerStatistics(server, getBaseUrl, getToken);
 
       const call = (server.tool as any).mock.calls.find(
-        (call: any) => call[0] === 'get-collaboration-health'
+        (call: any) => call[0] === 'get-server-statistics'
       );
 
       expect(call).toBeDefined();
@@ -152,7 +149,7 @@ describe('MCP Server Integration Tests', () => {
       const invalidGetBaseUrl = () => '';
 
       expect(() => {
-        registerGetCollaborationHealth(server, invalidGetBaseUrl, getToken);
+        registerGetServerStatistics(server, invalidGetBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -169,11 +166,11 @@ describe('MCP Server Integration Tests', () => {
       const invalidGetToken = () => 'invalid-token';
 
       expect(() => {
-        registerGetCollaborationHealth(server, invalidGetBaseUrl, invalidGetToken);
+        registerGetServerStatistics(server, invalidGetBaseUrl, invalidGetToken);
         registerListDocuments(server, invalidGetBaseUrl, invalidGetToken);
       }).not.toThrow();
 
-      expect(registeredTools).toContain('get-collaboration-health');
+      expect(registeredTools).toContain('get-server-statistics');
       expect(registeredTools).toContain('list-documents');
     });
   });
@@ -181,7 +178,6 @@ describe('MCP Server Integration Tests', () => {
   describe('Tool Categories', () => {
     it('should register all collaboration API tools', () => {
       const collaborationTools = [
-        registerGetCollaborationHealth,
         registerListDocuments,
         registerGetDocument,
         registerCreateDocument,
@@ -197,7 +193,7 @@ describe('MCP Server Integration Tests', () => {
         expect(() => registerTool(server, getBaseUrl, getToken)).not.toThrow();
       });
 
-      expect(registeredTools).toHaveLength(10);
+      expect(registeredTools).toHaveLength(9);
     });
 
     it('should register all conversion API tools', () => {
@@ -219,7 +215,7 @@ describe('MCP Server Integration Tests', () => {
       const customBaseUrl = 'https://custom-server.example.com:9000';
       const customGetBaseUrl = vi.fn(() => customBaseUrl);
 
-      registerGetCollaborationHealth(server, customGetBaseUrl, getToken);
+      registerGetServerStatistics(server, customGetBaseUrl, getToken);
 
       expect(customGetBaseUrl).toBeDefined();
     });
@@ -238,11 +234,11 @@ describe('MCP Server Integration Tests', () => {
       const envGetToken = () => process.env.TOKEN;
 
       expect(() => {
-        registerGetCollaborationHealth(server, envGetBaseUrl, envGetToken);
+        registerGetServerStatistics(server, envGetBaseUrl, envGetToken);
         registerListDocuments(server, envGetBaseUrl, envGetToken);
       }).not.toThrow();
 
-      expect(registeredTools).toContain('get-collaboration-health');
+      expect(registeredTools).toContain('get-server-statistics');
       expect(registeredTools).toContain('list-documents');
     });
   });

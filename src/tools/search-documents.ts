@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import { buildJsonHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerSearchDocuments(
   server: McpServer,
@@ -21,7 +21,7 @@ export default function registerSearchDocuments(
     },
     async ({ query, limit = 10 }) => {
       try {
-        const headers = buildHeaders(getToken());
+        const headers = buildJsonHeaders(getToken());
 
         const response = await fetch(`${getBaseUrl()}/api/search`, {
           method: 'POST',

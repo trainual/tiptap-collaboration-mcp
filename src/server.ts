@@ -3,7 +3,6 @@ import registerCreateDocument from './tools/create-document.js';
 import registerDeleteDocument from './tools/delete-document.js';
 import registerDuplicateDocument from './tools/duplicate-document.js';
 import registerExportMarkdown from './tools/export-markdown.js';
-import registerGetCollaborationHealth from './tools/get-collaboration-health.js';
 import registerGetDocument from './tools/get-document.js';
 import registerGetDocumentStatistics from './tools/get-document-statistics.js';
 import registerGetServerStatistics from './tools/get-server-statistics.js';
@@ -17,7 +16,7 @@ let BASE_URL: string | undefined;
 
 const server = new McpServer({
   name: 'tiptap-collaboration-mcp',
-  version: '1.0.0',
+  version: '1.1.0',
   capabilities: {
     resources: {},
     tools: {},
@@ -45,7 +44,6 @@ registerCreateDocument(server, getBaseUrl, getToken);
 registerDeleteDocument(server, getBaseUrl, getToken);
 registerDuplicateDocument(server, getBaseUrl, getToken);
 registerExportMarkdown(server, getBaseUrl, getToken);
-registerGetCollaborationHealth(server, getBaseUrl, getToken);
 registerGetDocument(server, getBaseUrl, getToken);
 registerGetDocumentStatistics(server, getBaseUrl, getToken);
 registerGetServerStatistics(server, getBaseUrl, getToken);

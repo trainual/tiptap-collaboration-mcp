@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import { buildHeaders, buildJsonHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerDuplicateDocument(
   server: McpServer,
@@ -18,11 +18,9 @@ export default function registerDuplicateDocument(
     },
     async ({ sourceId, targetId }) => {
       try {
-        const headers = buildHeaders(getToken());
-
         const getResponse = await fetch(
           `${getBaseUrl()}/api/documents/${sourceId}`,
-          { headers }
+          { headers: buildHeaders(getToken()) }
         );
 
         if (!getResponse.ok) {
@@ -42,7 +40,7 @@ export default function registerDuplicateDocument(
           `${getBaseUrl()}/api/documents?format=json`,
           {
             method: 'POST',
-            headers,
+            headers: buildJsonHeaders(getToken()),
             body: JSON.stringify({ ...sourceContent, id: targetId }),
           }
         );

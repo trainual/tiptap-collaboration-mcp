@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import { buildJsonHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerCreateDocument(
   server: McpServer,
@@ -39,7 +39,7 @@ export default function registerCreateDocument(
     },
     async ({ name, content }) => {
       try {
-        const headers = buildHeaders(getToken());
+        const headers = buildJsonHeaders(getToken());
 
         const response = await fetch(
           `${getBaseUrl()}/api/documents/${name}?format=json`,

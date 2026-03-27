@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import registerGetCollaborationHealth from '../src/tools/get-collaboration-health.js';
+import registerGetServerStatistics from '../src/tools/get-server-statistics.js';
 
 describe('Configuration Tests', () => {
   let server: McpServer;
@@ -22,7 +22,7 @@ describe('Configuration Tests', () => {
       const getToken = () => undefined;
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -31,7 +31,7 @@ describe('Configuration Tests', () => {
       const getToken = () => undefined;
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -40,7 +40,7 @@ describe('Configuration Tests', () => {
       const getToken = () => undefined;
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -49,7 +49,7 @@ describe('Configuration Tests', () => {
       const getToken = () => undefined;
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
     });
   });
@@ -60,7 +60,7 @@ describe('Configuration Tests', () => {
       const getToken = () => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -69,7 +69,7 @@ describe('Configuration Tests', () => {
       const getToken = () => 'api-key-12345';
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -78,7 +78,7 @@ describe('Configuration Tests', () => {
       const getToken = () => '';
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -88,7 +88,7 @@ describe('Configuration Tests', () => {
       const getToken = () => tokenValue;
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
         // Simulate token refresh
         tokenValue = 'refreshed-token';
       }).not.toThrow();
@@ -102,7 +102,7 @@ describe('Configuration Tests', () => {
       const getToken = () => process.env.TOKEN;
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -118,7 +118,7 @@ describe('Configuration Tests', () => {
       const getToken = () => process.env.TOKEN;
 
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
+        registerGetServerStatistics(server, getBaseUrl, getToken);
       }).not.toThrow();
 
       // Restore original values
