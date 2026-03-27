@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerExportMarkdown(
   server: McpServer,
@@ -10,9 +11,18 @@ export default function registerExportMarkdown(
     'export-markdown',
     'Export Tiptap JSON content to Markdown format',
     {
-      content: z.object({}).describe('Tiptap JSON content to convert to Markdown'),
-      format: z.enum(['md', 'gfm']).optional().describe('Output format: md (standard) or gfm (GitHub Flavored Markdown). Default: md'),
-      appId: z.string().describe('Your Tiptap App ID for the conversion service'),
+      content: z
+        .object({})
+        .describe('Tiptap JSON content to convert to Markdown'),
+      format: z
+        .enum(['md', 'gfm'])
+        .optional()
+        .describe(
+          'Output format: md (standard) or gfm (GitHub Flavored Markdown). Default: md'
+        ),
+      appId: z
+        .string()
+        .describe('Your Tiptap App ID for the conversion service'),
     },
     async ({ content, format = 'md', appId }) => {
       try {
@@ -32,37 +42,22 @@ export default function registerExportMarkdown(
         });
 
         if (!response.ok) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Failed to export to markdown. HTTP error: ${response.status} ${response.statusText}. Make sure you have a valid JWT token and App ID for the Tiptap Conversion service.`,
-              },
-            ],
-          };
+          return mcpError(
+            `Failed to export to markdown. HTTP error: ${response.status} ${response.statusText}. Make sure you have a valid JWT token and App ID for the Tiptap Conversion service.`
+          );
         }
 
         const markdownContent = await response.text();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Tiptap JSON exported to ${format.toUpperCase()} successfully:\n\n${markdownContent}`,
-            },
-          ],
-        };
+        return mcpSuccess(
+          `Tiptap JSON exported to ${format.toUpperCase()} successfully:\n\n${markdownContent}`
+        );
       } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error exporting to markdown: ${
-                error instanceof Error ? error.message : 'Unknown error'
-              }`,
-            },
-          ],
-        };
+        return mcpError(
+          `Error exporting to markdown: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
       }
     }
   );

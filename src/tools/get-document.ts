@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerGetDocument(
   server: McpServer,
@@ -14,52 +15,30 @@ export default function registerGetDocument(
     },
     async ({ id }) => {
       try {
-        const headers: Record<string, string> = {
-          'User-Agent': 'tiptap-collaboration-mcp',
-          'Content-Type': 'application/json',
-        };
-        
-        const token = getToken();
-        if (token) headers['Authorization'] = token;
+        const headers = buildHeaders(getToken());
 
-        const response = await fetch(`${getBaseUrl()}/api/documents/${id}`, { headers });
-        
+        const response = await fetch(
+          `${getBaseUrl()}/api/documents/${id}`,
+          { headers }
+        );
+
         if (!response.ok) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Document with ID ${id} not found. HTTP error: ${response.status} ${response.statusText}`,
-              },
-            ],
-          };
+          return mcpError(
+            `Document with ID ${id} not found. HTTP error: ${response.status} ${response.statusText}`
+          );
         }
 
         const documentData = await response.json();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Document Information: ${JSON.stringify(
-                documentData,
-                null,
-                2
-              )}`,
-            },
-          ],
-        };
+        return mcpSuccess(
+          `Document Information: ${JSON.stringify(documentData, null, 2)}`
+        );
       } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error retrieving document: ${
-                error instanceof Error ? error.message : 'Unknown error'
-              }`,
-            },
-          ],
-        };
+        return mcpError(
+          `Error retrieving document: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
       }
     }
   );

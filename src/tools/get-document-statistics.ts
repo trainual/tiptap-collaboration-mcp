@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerGetDocumentStatistics(
   server: McpServer,
@@ -14,58 +15,33 @@ export default function registerGetDocumentStatistics(
     },
     async ({ id }) => {
       try {
-        const headers: Record<string, string> = {
-          'User-Agent': 'tiptap-collaboration-mcp',
-          'Content-Type': 'application/json',
-        };
+        const headers = buildHeaders(getToken());
 
-        const token = getToken();
-        if (token) headers['Authorization'] = token;
-
-        const response = await fetch(`${getBaseUrl()}/api/documents/${id}/statistics`, { headers });
+        const response = await fetch(
+          `${getBaseUrl()}/api/documents/${id}/statistics`,
+          { headers }
+        );
 
         if (!response.ok) {
           if (response.status === 404) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `Document with ID ${id} not found.`,
-                },
-              ],
-            };
+            return mcpError(`Document with ID ${id} not found.`);
           }
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Failed to retrieve document statistics. HTTP error: ${response.status} ${response.statusText}`,
-              },
-            ],
-          };
+          return mcpError(
+            `Failed to retrieve document statistics. HTTP error: ${response.status} ${response.statusText}`
+          );
         }
 
         const statistics = await response.json();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Document Statistics for ${id}: ${JSON.stringify(statistics, null, 2)}`,
-            },
-          ],
-        };
+        return mcpSuccess(
+          `Document Statistics for ${id}: ${JSON.stringify(statistics, null, 2)}`
+        );
       } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error retrieving document statistics: ${
-                error instanceof Error ? error.message : 'Unknown error'
-              }`,
-            },
-          ],
-        };
+        return mcpError(
+          `Error retrieving document statistics: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
       }
     }
   );
