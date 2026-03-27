@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerDeleteDocument(
   server: McpServer,
@@ -14,59 +15,32 @@ export default function registerDeleteDocument(
     },
     async ({ id }) => {
       try {
-        const headers: Record<string, string> = {
-          'User-Agent': 'tiptap-collaboration-mcp',
-          'Content-Type': 'application/json',
-        };
+        const headers = buildHeaders(getToken());
 
-        const token = getToken();
-        if (token) headers['Authorization'] = token;
-
-        const response = await fetch(`${getBaseUrl()}/api/documents/${id}`, {
-          method: 'DELETE',
-          headers,
-        });
+        const response = await fetch(
+          `${getBaseUrl()}/api/documents/${id}`,
+          {
+            method: 'DELETE',
+            headers,
+          }
+        );
 
         if (!response.ok) {
           if (response.status === 404) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `Document with ID ${id} not found.`,
-                },
-              ],
-            };
+            return mcpError(`Document with ID ${id} not found.`);
           }
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Failed to delete document. HTTP error: ${response.status} ${response.statusText}`,
-              },
-            ],
-          };
+          return mcpError(
+            `Failed to delete document. HTTP error: ${response.status} ${response.statusText}`
+          );
         }
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Document with ID ${id} deleted successfully.`,
-            },
-          ],
-        };
+        return mcpSuccess(`Document with ID ${id} deleted successfully.`);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error deleting document: ${
-                error instanceof Error ? error.message : 'Unknown error'
-              }`,
-            },
-          ],
-        };
+        return mcpError(
+          `Error deleting document: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
       }
     }
   );

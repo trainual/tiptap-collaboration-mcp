@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerGetCollaborationHealth(
   server: McpServer,
@@ -11,44 +12,22 @@ export default function registerGetCollaborationHealth(
     {},
     async () => {
       try {
-        const headers: Record<string, string> = {
-          'User-Agent': 'tiptap-collaboration-mcp',
-          'Content-Type': 'application/json',
-        };
-        const token = getToken();
-        if (token) headers.Authorization = token;
+        const headers = buildHeaders(getToken());
 
         const response = await fetch(`${getBaseUrl()}/health`, { headers });
         if (!response.ok) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Health check HTTP error: ${response.status} ${response.statusText}`,
-              },
-            ],
-          };
+          return mcpError(
+            `Health check HTTP error: ${response.status} ${response.statusText}`
+          );
         }
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Health check response: ${await response.text()}`,
-            },
-          ],
-        };
+        return mcpSuccess(`Health check response: ${await response.text()}`);
       } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error connecting to Tiptap collaboration service: ${
-                error instanceof Error ? error.message : 'Unknown error'
-              }`,
-            },
-          ],
-        };
+        return mcpError(
+          `Error connecting to Tiptap collaboration service: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        );
       }
     }
   );

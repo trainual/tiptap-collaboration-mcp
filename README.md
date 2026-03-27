@@ -62,13 +62,6 @@ Duplicate an existing collaborative document.
   - `targetId` (string): ID for the new duplicated document
 - **Returns**: Duplicated document information
 
-#### `encrypt-document`
-Encrypt a collaborative document using Base64 encryption.
-- **Parameters**:
-  - `id` (string): Document ID
-  - `content` (object): Document content in Tiptap JSON format to encrypt
-- **Returns**: Encryption confirmation
-
 #### `search-documents`
 Search documents using semantic search (requires Tiptap Semantic Search).
 - **Parameters**:
@@ -92,13 +85,6 @@ Convert Tiptap JSON content to Markdown format.
   - `content` (object): Tiptap JSON content to convert
   - `format` (string, optional): "md" or "gfm" (GitHub Flavored Markdown, default: "md")
 - **Returns**: Converted Markdown content
-
-### Batch Operations
-#### `batch-import-documents`
-Import multiple documents in bulk using a predefined JSON structure.
-- **Parameters**:
-  - `documents` (array): Array of document arrays, where each inner array represents versions of a single document
-- **Returns**: Import results for all documents
 
 ## Installation
 

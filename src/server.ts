@@ -1,9 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import registerBatchImportDocuments from './tools/batch-import-documents.js';
 import registerCreateDocument from './tools/create-document.js';
 import registerDeleteDocument from './tools/delete-document.js';
 import registerDuplicateDocument from './tools/duplicate-document.js';
-import registerEncryptDocument from './tools/encrypt-document.js';
 import registerExportMarkdown from './tools/export-markdown.js';
 import registerGetCollaborationHealth from './tools/get-collaboration-health.js';
 import registerGetDocument from './tools/get-document.js';
@@ -43,11 +41,9 @@ const getBaseUrl = () => {
   return BASE_URL;
 };
 
-registerBatchImportDocuments(server, getBaseUrl, getToken);
 registerCreateDocument(server, getBaseUrl, getToken);
 registerDeleteDocument(server, getBaseUrl, getToken);
 registerDuplicateDocument(server, getBaseUrl, getToken);
-registerEncryptDocument(server, getBaseUrl, getToken);
 registerExportMarkdown(server, getBaseUrl, getToken);
 registerGetCollaborationHealth(server, getBaseUrl, getToken);
 registerGetDocument(server, getBaseUrl, getToken);

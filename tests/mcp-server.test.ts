@@ -9,13 +9,26 @@ import registerCreateDocument from '../src/tools/create-document.js';
 import registerUpdateDocument from '../src/tools/update-document.js';
 import registerDeleteDocument from '../src/tools/delete-document.js';
 import registerDuplicateDocument from '../src/tools/duplicate-document.js';
-import registerEncryptDocument from '../src/tools/encrypt-document.js';
 import registerSearchDocuments from '../src/tools/search-documents.js';
-import registerBatchImportDocuments from '../src/tools/batch-import-documents.js';
 import registerGetServerStatistics from '../src/tools/get-server-statistics.js';
 import registerGetDocumentStatistics from '../src/tools/get-document-statistics.js';
 import registerImportMarkdown from '../src/tools/import-markdown.js';
 import registerExportMarkdown from '../src/tools/export-markdown.js';
+
+const allTools = [
+  registerGetCollaborationHealth,
+  registerListDocuments,
+  registerGetDocument,
+  registerCreateDocument,
+  registerUpdateDocument,
+  registerDeleteDocument,
+  registerDuplicateDocument,
+  registerSearchDocuments,
+  registerGetServerStatistics,
+  registerGetDocumentStatistics,
+  registerImportMarkdown,
+  registerExportMarkdown,
+];
 
 describe('MCP Server Integration Tests', () => {
   let server: McpServer;
@@ -24,7 +37,6 @@ describe('MCP Server Integration Tests', () => {
   let registeredTools: string[];
 
   beforeEach(() => {
-    // Create a fresh server instance for each test
     server = new McpServer({
       name: 'tiptap-collaboration-mcp',
       version: '1.0.0',
@@ -38,7 +50,6 @@ describe('MCP Server Integration Tests', () => {
     getToken = vi.fn(() => undefined);
     registeredTools = [];
 
-    // Mock the server.tool method to track registrations
     const originalTool = server.tool.bind(server);
     server.tool = vi.fn((name, description, schema, handler) => {
       registeredTools.push(name);
@@ -46,21 +57,18 @@ describe('MCP Server Integration Tests', () => {
     });
   });
 
+  function registerAll() {
+    allTools.forEach(register => register(server, getBaseUrl, getToken));
+  }
+
   describe('Tool Registration', () => {
     it('should register all collaboration tools without errors', () => {
+      const collaborationTools = allTools.filter(
+        fn => fn !== registerImportMarkdown && fn !== registerExportMarkdown
+      );
+
       expect(() => {
-        registerGetCollaborationHealth(server, getBaseUrl, getToken);
-        registerListDocuments(server, getBaseUrl, getToken);
-        registerGetDocument(server, getBaseUrl, getToken);
-        registerCreateDocument(server, getBaseUrl, getToken);
-        registerUpdateDocument(server, getBaseUrl, getToken);
-        registerDeleteDocument(server, getBaseUrl, getToken);
-        registerDuplicateDocument(server, getBaseUrl, getToken);
-        registerEncryptDocument(server, getBaseUrl, getToken);
-        registerSearchDocuments(server, getBaseUrl, getToken);
-        registerBatchImportDocuments(server, getBaseUrl, getToken);
-        registerGetServerStatistics(server, getBaseUrl, getToken);
-        registerGetDocumentStatistics(server, getBaseUrl, getToken);
+        collaborationTools.forEach(register => register(server, getBaseUrl, getToken));
       }).not.toThrow();
     });
 
@@ -71,42 +79,13 @@ describe('MCP Server Integration Tests', () => {
       }).not.toThrow();
     });
 
-    it('should register exactly 14 tools in total', () => {
-      // Register all tools
-      registerGetCollaborationHealth(server, getBaseUrl, getToken);
-      registerListDocuments(server, getBaseUrl, getToken);
-      registerGetDocument(server, getBaseUrl, getToken);
-      registerCreateDocument(server, getBaseUrl, getToken);
-      registerUpdateDocument(server, getBaseUrl, getToken);
-      registerDeleteDocument(server, getBaseUrl, getToken);
-      registerDuplicateDocument(server, getBaseUrl, getToken);
-      registerEncryptDocument(server, getBaseUrl, getToken);
-      registerSearchDocuments(server, getBaseUrl, getToken);
-      registerBatchImportDocuments(server, getBaseUrl, getToken);
-      registerGetServerStatistics(server, getBaseUrl, getToken);
-      registerGetDocumentStatistics(server, getBaseUrl, getToken);
-      registerImportMarkdown(server, getBaseUrl, getToken);
-      registerExportMarkdown(server, getBaseUrl, getToken);
-
-      expect(registeredTools).toHaveLength(14);
+    it('should register exactly 12 tools in total', () => {
+      registerAll();
+      expect(registeredTools).toHaveLength(12);
     });
 
     it('should register tools with expected names', () => {
-      // Register all tools
-      registerGetCollaborationHealth(server, getBaseUrl, getToken);
-      registerListDocuments(server, getBaseUrl, getToken);
-      registerGetDocument(server, getBaseUrl, getToken);
-      registerCreateDocument(server, getBaseUrl, getToken);
-      registerUpdateDocument(server, getBaseUrl, getToken);
-      registerDeleteDocument(server, getBaseUrl, getToken);
-      registerDuplicateDocument(server, getBaseUrl, getToken);
-      registerEncryptDocument(server, getBaseUrl, getToken);
-      registerSearchDocuments(server, getBaseUrl, getToken);
-      registerBatchImportDocuments(server, getBaseUrl, getToken);
-      registerGetServerStatistics(server, getBaseUrl, getToken);
-      registerGetDocumentStatistics(server, getBaseUrl, getToken);
-      registerImportMarkdown(server, getBaseUrl, getToken);
-      registerExportMarkdown(server, getBaseUrl, getToken);
+      registerAll();
 
       const expectedTools = [
         'get-collaboration-health',
@@ -116,13 +95,11 @@ describe('MCP Server Integration Tests', () => {
         'update-document',
         'delete-document',
         'duplicate-document',
-        'encrypt-document',
         'search-documents',
-        'batch-import-documents',
         'get-server-statistics',
         'get-document-statistics',
         'import-markdown',
-        'export-markdown'
+        'export-markdown',
       ];
 
       expect(registeredTools).toEqual(expect.arrayContaining(expectedTools));
@@ -139,12 +116,11 @@ describe('MCP Server Integration Tests', () => {
     it('should handle tool registration with proper MCP schema', () => {
       registerCreateDocument(server, getBaseUrl, getToken);
 
-      // Verify the tool was registered with proper MCP structure
       expect(server.tool).toHaveBeenCalledWith(
         'create-document',
         'Create a new collaborative document',
-        expect.any(Object), // Schema object
-        expect.any(Function) // Handler function
+        expect.any(Object),
+        expect.any(Function)
       );
     });
 
@@ -156,7 +132,7 @@ describe('MCP Server Integration Tests', () => {
       );
 
       expect(call).toBeDefined();
-      expect(call[2]).toHaveProperty('id'); // Should have id parameter
+      expect(call[2]).toHaveProperty('id');
     });
 
     it('should register tools with proper handler functions', () => {
@@ -167,22 +143,22 @@ describe('MCP Server Integration Tests', () => {
       );
 
       expect(call).toBeDefined();
-      expect(typeof call[3]).toBe('function'); // Handler should be a function
+      expect(typeof call[3]).toBe('function');
     });
   });
 
   describe('Error Propagation', () => {
     it('should handle invalid base URL configuration', () => {
       const invalidGetBaseUrl = () => '';
-      
+
       expect(() => {
         registerGetCollaborationHealth(server, invalidGetBaseUrl, getToken);
-      }).not.toThrow(); // Registration should not throw, but runtime calls might fail
+      }).not.toThrow();
     });
 
     it('should handle missing token gracefully', () => {
       const noToken = () => undefined;
-      
+
       expect(() => {
         registerCreateDocument(server, getBaseUrl, noToken);
       }).not.toThrow();
@@ -212,9 +188,7 @@ describe('MCP Server Integration Tests', () => {
         registerUpdateDocument,
         registerDeleteDocument,
         registerDuplicateDocument,
-        registerEncryptDocument,
         registerSearchDocuments,
-        registerBatchImportDocuments,
         registerGetServerStatistics,
         registerGetDocumentStatistics,
       ];
@@ -223,7 +197,7 @@ describe('MCP Server Integration Tests', () => {
         expect(() => registerTool(server, getBaseUrl, getToken)).not.toThrow();
       });
 
-      expect(registeredTools).toHaveLength(12);
+      expect(registeredTools).toHaveLength(10);
     });
 
     it('should register all conversion API tools', () => {
@@ -247,7 +221,6 @@ describe('MCP Server Integration Tests', () => {
 
       registerGetCollaborationHealth(server, customGetBaseUrl, getToken);
 
-      // The base URL function should be stored and could be called later
       expect(customGetBaseUrl).toBeDefined();
     });
 
@@ -257,12 +230,10 @@ describe('MCP Server Integration Tests', () => {
 
       registerCreateDocument(server, getBaseUrl, customGetToken);
 
-      // The token function should be stored and could be called later
       expect(customGetToken).toBeDefined();
     });
 
     it('should handle environment variable style configuration', () => {
-      // Simulate environment variable configuration
       const envGetBaseUrl = () => process.env.BASE_URL || 'http://localhost:8080';
       const envGetToken = () => process.env.TOKEN;
 
