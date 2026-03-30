@@ -37,11 +37,11 @@ export default function registerDuplicateDocument(
         const sourceContent = await getResponse.json();
 
         const createResponse = await fetch(
-          `${getBaseUrl()}/api/documents?format=json`,
+          `${getBaseUrl()}/api/documents/${targetId}?format=json`,
           {
             method: 'POST',
             headers: buildJsonHeaders(getToken()),
-            body: JSON.stringify({ ...sourceContent, id: targetId }),
+            body: JSON.stringify(sourceContent),
           }
         );
 
