@@ -17,21 +17,7 @@ export default function registerCreateDocument(
         .passthrough()
         .default({
           type: 'doc',
-          content: [
-            {
-              type: 'paragraph',
-              attrs: {
-                indent: 0,
-                textAlign: 'left',
-              },
-              content: [
-                {
-                  text: 'Test',
-                  type: 'text',
-                },
-              ],
-            },
-          ],
+          content: [{ type: 'paragraph' }],
         })
         .describe(
           'Document content in Tiptap JSON format (uses default if not provided)'

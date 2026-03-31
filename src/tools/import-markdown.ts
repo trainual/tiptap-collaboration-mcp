@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 
 export default function registerImportMarkdown(
   server: McpServer,
@@ -26,13 +26,12 @@ export default function registerImportMarkdown(
     },
     async ({ content, format = 'md', appId }) => {
       try {
-        const headers: Record<string, string> = {
-          'User-Agent': 'tiptap-collaboration-mcp',
-          'X-App-Id': appId,
-        };
-
+        // Conversion API uses Bearer token (different from collaboration API which uses raw token)
         const token = getToken();
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const headers = buildHeaders(
+          token ? `Bearer ${token}` : undefined,
+          { 'X-App-Id': appId }
+        );
 
         const formData = new FormData();
         const blob = new Blob([content], { type: 'text/markdown' });

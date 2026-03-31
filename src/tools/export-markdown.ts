@@ -26,13 +26,13 @@ export default function registerExportMarkdown(
     },
     async ({ content, format = 'md', appId }) => {
       try {
+        // Conversion API uses Bearer token (different from collaboration API which uses raw token)
+        const token = getToken();
         const headers: Record<string, string> = {
           'User-Agent': 'tiptap-collaboration-mcp',
           'Content-Type': 'application/json',
           'X-App-Id': appId,
         };
-
-        const token = getToken();
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const response = await fetch(`${getBaseUrl()}/api/convert/export`, {

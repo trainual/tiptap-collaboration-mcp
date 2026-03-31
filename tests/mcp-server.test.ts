@@ -133,10 +133,10 @@ describe('MCP Server Integration Tests', () => {
     });
 
     it('should register tools with proper handler functions', () => {
-      registerGetServerStatistics(server, getBaseUrl, getToken);
+      registerListDocuments(server, getBaseUrl, getToken);
 
       const call = (server.tool as any).mock.calls.find(
-        (call: any) => call[0] === 'get-server-statistics'
+        (call: any) => call[0] === 'list-documents'
       );
 
       expect(call).toBeDefined();
@@ -149,7 +149,7 @@ describe('MCP Server Integration Tests', () => {
       const invalidGetBaseUrl = () => '';
 
       expect(() => {
-        registerGetServerStatistics(server, invalidGetBaseUrl, getToken);
+        registerDeleteDocument(server, invalidGetBaseUrl, getToken);
       }).not.toThrow();
     });
 
@@ -166,12 +166,12 @@ describe('MCP Server Integration Tests', () => {
       const invalidGetToken = () => 'invalid-token';
 
       expect(() => {
-        registerGetServerStatistics(server, invalidGetBaseUrl, invalidGetToken);
-        registerListDocuments(server, invalidGetBaseUrl, invalidGetToken);
+        registerDuplicateDocument(server, invalidGetBaseUrl, invalidGetToken);
+        registerSearchDocuments(server, invalidGetBaseUrl, invalidGetToken);
       }).not.toThrow();
 
-      expect(registeredTools).toContain('get-server-statistics');
-      expect(registeredTools).toContain('list-documents');
+      expect(registeredTools).toContain('duplicate-document');
+      expect(registeredTools).toContain('search-documents');
     });
   });
 
@@ -215,7 +215,7 @@ describe('MCP Server Integration Tests', () => {
       const customBaseUrl = 'https://custom-server.example.com:9000';
       const customGetBaseUrl = vi.fn(() => customBaseUrl);
 
-      registerGetServerStatistics(server, customGetBaseUrl, getToken);
+      registerGetDocumentStatistics(server, customGetBaseUrl, getToken);
 
       expect(customGetBaseUrl).toBeDefined();
     });
@@ -234,12 +234,12 @@ describe('MCP Server Integration Tests', () => {
       const envGetToken = () => process.env.TOKEN;
 
       expect(() => {
-        registerGetServerStatistics(server, envGetBaseUrl, envGetToken);
-        registerListDocuments(server, envGetBaseUrl, envGetToken);
+        registerUpdateDocument(server, envGetBaseUrl, envGetToken);
+        registerImportMarkdown(server, envGetBaseUrl, envGetToken);
       }).not.toThrow();
 
-      expect(registeredTools).toContain('get-server-statistics');
-      expect(registeredTools).toContain('list-documents');
+      expect(registeredTools).toContain('update-document');
+      expect(registeredTools).toContain('import-markdown');
     });
   });
 });
