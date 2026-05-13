@@ -18,7 +18,7 @@ export default function registerGetDocument(
         const headers = buildHeaders(getToken());
 
         const response = await fetch(
-          `${getBaseUrl()}/api/documents/${id}`,
+          `${getBaseUrl()}/api/documents/${encodeURIComponent(id)}`,
           { headers }
         );
 

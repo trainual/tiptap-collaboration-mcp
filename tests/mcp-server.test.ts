@@ -77,7 +77,7 @@ describe('MCP Server Integration Tests', () => {
       }).not.toThrow();
     });
 
-    it('should register exactly 12 tools in total', () => {
+    it('should register exactly 11 tools in total', () => {
       registerAll();
       expect(registeredTools).toHaveLength(11);
     });

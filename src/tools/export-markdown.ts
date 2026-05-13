@@ -13,6 +13,7 @@ export default function registerExportMarkdown(
     {
       content: z
         .object({})
+        .passthrough()
         .describe('Tiptap JSON content to convert to Markdown'),
       format: z
         .enum(['md', 'gfm'])

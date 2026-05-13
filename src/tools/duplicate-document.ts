@@ -19,7 +19,7 @@ export default function registerDuplicateDocument(
     async ({ sourceId, targetId }) => {
       try {
         const getResponse = await fetch(
-          `${getBaseUrl()}/api/documents/${sourceId}`,
+          `${getBaseUrl()}/api/documents/${encodeURIComponent(sourceId)}`,
           { headers: buildHeaders(getToken()) }
         );
 
@@ -37,7 +37,7 @@ export default function registerDuplicateDocument(
         const sourceContent = await getResponse.json();
 
         const createResponse = await fetch(
-          `${getBaseUrl()}/api/documents/${targetId}?format=json`,
+          `${getBaseUrl()}/api/documents/${encodeURIComponent(targetId)}?format=json`,
           {
             method: 'POST',
             headers: buildJsonHeaders(getToken()),

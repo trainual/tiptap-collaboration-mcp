@@ -18,7 +18,7 @@ export default function registerGetDocumentStatistics(
         const headers = buildHeaders(getToken());
 
         const response = await fetch(
-          `${getBaseUrl()}/api/documents/${id}/statistics`,
+          `${getBaseUrl()}/api/documents/${encodeURIComponent(id)}/statistics`,
           { headers }
         );
 

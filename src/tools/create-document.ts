@@ -28,7 +28,7 @@ export default function registerCreateDocument(
         const headers = buildJsonHeaders(getToken());
 
         const response = await fetch(
-          `${getBaseUrl()}/api/documents/${name}?format=json`,
+          `${getBaseUrl()}/api/documents/${encodeURIComponent(name)}?format=json`,
           {
             method: 'POST',
             headers,
