@@ -18,7 +18,7 @@ export default function registerDeleteDocument(
         const headers = buildHeaders(getToken());
 
         const response = await fetch(
-          `${getBaseUrl()}/api/documents/${id}`,
+          `${getBaseUrl()}/api/documents/${encodeURIComponent(id)}`,
           {
             method: 'DELETE',
             headers,

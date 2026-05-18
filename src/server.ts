@@ -16,7 +16,7 @@ let BASE_URL: string | undefined;
 
 const server = new McpServer({
   name: 'tiptap-collaboration-mcp',
-  version: '1.1.1',
+  version: '1.1.2',
   capabilities: {
     resources: {},
     tools: {},

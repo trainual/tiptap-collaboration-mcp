@@ -14,6 +14,7 @@ export default function registerUpdateDocument(
       id: z.string().describe('ID of the document to update'),
       content: z
         .object({})
+        .passthrough()
         .describe('Document content in Tiptap JSON format'),
       mode: z
         .enum(['replace', 'append'])
@@ -27,7 +28,7 @@ export default function registerUpdateDocument(
         const headers = buildJsonHeaders(getToken());
 
         const response = await fetch(
-          `${getBaseUrl()}/api/documents/${id}?format=json&mode=${mode}`,
+          `${getBaseUrl()}/api/documents/${encodeURIComponent(id)}?format=json&mode=${mode}`,
           {
             method: 'PATCH',
             headers,
