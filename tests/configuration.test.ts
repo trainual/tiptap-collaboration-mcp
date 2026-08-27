@@ -9,7 +9,7 @@ describe('Configuration Tests', () => {
     server = new McpServer(
       {
         name: 'tiptap-collaboration-mcp',
-        version: '1.0.0',
+        version: '0.0.0-test',
       },
       {
         capabilities: {
