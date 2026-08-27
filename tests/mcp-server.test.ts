@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach, vi, type MockInstance } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  vi,
+  type MockInstance,
+} from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 // Import all tool registration functions
@@ -36,14 +43,17 @@ describe('MCP Server Integration Tests', () => {
   const registeredTools = () => toolSpy.mock.calls.map(([name]) => name);
 
   beforeEach(() => {
-    server = new McpServer({
-      name: 'tiptap-collaboration-mcp',
-      version: '1.0.0',
-    }, {
-      capabilities: {
-        tools: {},
+    server = new McpServer(
+      {
+        name: 'tiptap-collaboration-mcp',
+        version: '1.0.0',
       },
-    });
+      {
+        capabilities: {
+          tools: {},
+        },
+      }
+    );
 
     getBaseUrl = vi.fn(() => 'http://localhost:8080');
     getToken = vi.fn(() => undefined);
@@ -51,17 +61,19 @@ describe('MCP Server Integration Tests', () => {
   });
 
   function registerAll() {
-    allTools.forEach(register => register(server, getBaseUrl, getToken));
+    allTools.forEach((register) => register(server, getBaseUrl, getToken));
   }
 
   describe('Tool Registration', () => {
     it('should register all collaboration tools without errors', () => {
       const collaborationTools = allTools.filter(
-        fn => fn !== registerImportMarkdown && fn !== registerExportMarkdown
+        (fn) => fn !== registerImportMarkdown && fn !== registerExportMarkdown
       );
 
       expect(() => {
-        collaborationTools.forEach(register => register(server, getBaseUrl, getToken));
+        collaborationTools.forEach((register) =>
+          register(server, getBaseUrl, getToken)
+        );
       }).not.toThrow();
     });
 
@@ -119,9 +131,7 @@ describe('MCP Server Integration Tests', () => {
     it('should register tools with proper parameter schemas', () => {
       registerGetDocument(server, getBaseUrl, getToken);
 
-      const call = toolSpy.mock.calls.find(
-        ([name]) => name === 'get-document'
-      );
+      const call = toolSpy.mock.calls.find(([name]) => name === 'get-document');
 
       expect(call).toBeDefined();
       expect(call?.[2]).toHaveProperty('id');
@@ -184,7 +194,7 @@ describe('MCP Server Integration Tests', () => {
         registerGetDocumentStatistics,
       ];
 
-      collaborationTools.forEach(registerTool => {
+      collaborationTools.forEach((registerTool) => {
         expect(() => registerTool(server, getBaseUrl, getToken)).not.toThrow();
       });
 
@@ -192,12 +202,9 @@ describe('MCP Server Integration Tests', () => {
     });
 
     it('should register all conversion API tools', () => {
-      const conversionTools = [
-        registerImportMarkdown,
-        registerExportMarkdown,
-      ];
+      const conversionTools = [registerImportMarkdown, registerExportMarkdown];
 
-      conversionTools.forEach(registerTool => {
+      conversionTools.forEach((registerTool) => {
         expect(() => registerTool(server, getBaseUrl, getToken)).not.toThrow();
       });
 
@@ -225,7 +232,8 @@ describe('MCP Server Integration Tests', () => {
     });
 
     it('should handle environment variable style configuration', () => {
-      const envGetBaseUrl = () => process.env.BASE_URL || 'http://localhost:8080';
+      const envGetBaseUrl = () =>
+        process.env.BASE_URL || 'http://localhost:8080';
       const envGetToken = () => process.env.TOKEN;
 
       expect(() => {

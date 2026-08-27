@@ -6,14 +6,17 @@ describe('Configuration Tests', () => {
   let server: McpServer;
 
   beforeEach(() => {
-    server = new McpServer({
-      name: 'tiptap-collaboration-mcp',
-      version: '1.0.0',
-    }, {
-      capabilities: {
-        tools: {},
+    server = new McpServer(
+      {
+        name: 'tiptap-collaboration-mcp',
+        version: '1.0.0',
       },
-    });
+      {
+        capabilities: {
+          tools: {},
+        },
+      }
+    );
   });
 
   describe('BASE_URL Configuration', () => {
@@ -110,7 +113,7 @@ describe('Configuration Tests', () => {
       // Temporarily clear env vars
       const originalBaseUrl = process.env.BASE_URL;
       const originalToken = process.env.TOKEN;
-      
+
       delete process.env.BASE_URL;
       delete process.env.TOKEN;
 

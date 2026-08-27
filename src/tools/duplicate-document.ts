@@ -1,6 +1,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { buildHeaders, buildJsonHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import {
+  buildHeaders,
+  buildJsonHeaders,
+  mcpError,
+  mcpSuccess,
+} from '../utils/mcp-helpers.js';
 
 export default function registerDuplicateDocument(
   server: McpServer,
@@ -11,9 +16,7 @@ export default function registerDuplicateDocument(
     'duplicate-document',
     'Duplicate a collaborative document',
     {
-      sourceId: z
-        .string()
-        .describe('ID of the source document to duplicate'),
+      sourceId: z.string().describe('ID of the source document to duplicate'),
       targetId: z.string().describe('ID for the new duplicated document'),
     },
     async ({ sourceId, targetId }) => {
@@ -25,9 +28,7 @@ export default function registerDuplicateDocument(
 
         if (!getResponse.ok) {
           if (getResponse.status === 404) {
-            return mcpError(
-              `Source document with ID ${sourceId} not found.`
-            );
+            return mcpError(`Source document with ID ${sourceId} not found.`);
           }
           return mcpError(
             `Failed to retrieve source document. HTTP error: ${getResponse.status} ${getResponse.statusText}`
