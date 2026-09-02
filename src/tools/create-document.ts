@@ -1,6 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { buildJsonHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import {
+  buildJsonHeaders,
+  mcpError,
+  mcpSuccess,
+} from '../utils/mcp-helpers.js';
 
 export default function registerCreateDocument(
   server: McpServer,

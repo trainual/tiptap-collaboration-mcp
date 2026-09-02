@@ -6,14 +6,17 @@ describe('Server Lifecycle Tests', () => {
   let server: McpServer;
 
   beforeEach(() => {
-    server = new McpServer({
-      name: 'tiptap-collaboration-mcp',
-      version: '1.0.0',
-    }, {
-      capabilities: {
-        tools: {},
+    server = new McpServer(
+      {
+        name: 'tiptap-collaboration-mcp',
+        version: '0.0.0-test',
       },
-    });
+      {
+        capabilities: {
+          tools: {},
+        },
+      }
+    );
   });
 
   afterEach(async () => {

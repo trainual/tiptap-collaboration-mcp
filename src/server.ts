@@ -10,13 +10,14 @@ import registerImportMarkdown from './tools/import-markdown.js';
 import registerListDocuments from './tools/list-documents.js';
 import registerSearchDocuments from './tools/search-documents.js';
 import registerUpdateDocument from './tools/update-document.js';
+import { packageVersion } from './utils/package-info.js';
 
 let API_TOKEN: string | undefined;
 let BASE_URL: string | undefined;
 
 const server = new McpServer({
   name: 'tiptap-collaboration-mcp',
-  version: '1.1.2',
+  version: packageVersion,
   capabilities: {
     resources: {},
     tools: {},

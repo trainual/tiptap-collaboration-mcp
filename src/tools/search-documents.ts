@@ -1,6 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { buildJsonHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import {
+  buildJsonHeaders,
+  mcpError,
+  mcpSuccess,
+} from '../utils/mcp-helpers.js';
 
 export default function registerSearchDocuments(
   server: McpServer,
@@ -11,9 +15,7 @@ export default function registerSearchDocuments(
     'search-documents',
     'Perform semantic search across documents',
     {
-      query: z
-        .string()
-        .describe('Search query for semantic document search'),
+      query: z.string().describe('Search query for semantic document search'),
       limit: z
         .number()
         .optional()

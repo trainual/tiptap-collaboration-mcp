@@ -28,10 +28,9 @@ export default function registerImportMarkdown(
       try {
         // Conversion API uses Bearer token (different from collaboration API which uses raw token)
         const token = getToken();
-        const headers = buildHeaders(
-          token ? `Bearer ${token}` : undefined,
-          { 'X-App-Id': appId }
-        );
+        const headers = buildHeaders(token ? `Bearer ${token}` : undefined, {
+          'X-App-Id': appId,
+        });
 
         const formData = new FormData();
         const blob = new Blob([content], { type: 'text/markdown' });

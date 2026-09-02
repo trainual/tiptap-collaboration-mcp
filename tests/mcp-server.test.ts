@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  vi,
+  type MockInstance,
+} from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 // Import all tool registration functions
@@ -32,41 +39,41 @@ describe('MCP Server Integration Tests', () => {
   let server: McpServer;
   let getBaseUrl: () => string;
   let getToken: () => string | undefined;
-  let registeredTools: string[];
+  let toolSpy: MockInstance<McpServer['tool']>;
+  const registeredTools = () => toolSpy.mock.calls.map(([name]) => name);
 
   beforeEach(() => {
-    server = new McpServer({
-      name: 'tiptap-collaboration-mcp',
-      version: '1.0.0',
-    }, {
-      capabilities: {
-        tools: {},
+    server = new McpServer(
+      {
+        name: 'tiptap-collaboration-mcp',
+        version: '0.0.0-test',
       },
-    });
+      {
+        capabilities: {
+          tools: {},
+        },
+      }
+    );
 
     getBaseUrl = vi.fn(() => 'http://localhost:8080');
     getToken = vi.fn(() => undefined);
-    registeredTools = [];
-
-    const originalTool = server.tool.bind(server);
-    server.tool = vi.fn((name, description, schema, handler) => {
-      registeredTools.push(name);
-      return originalTool(name, description, schema, handler);
-    });
+    toolSpy = vi.spyOn(server, 'tool');
   });
 
   function registerAll() {
-    allTools.forEach(register => register(server, getBaseUrl, getToken));
+    allTools.forEach((register) => register(server, getBaseUrl, getToken));
   }
 
   describe('Tool Registration', () => {
     it('should register all collaboration tools without errors', () => {
       const collaborationTools = allTools.filter(
-        fn => fn !== registerImportMarkdown && fn !== registerExportMarkdown
+        (fn) => fn !== registerImportMarkdown && fn !== registerExportMarkdown
       );
 
       expect(() => {
-        collaborationTools.forEach(register => register(server, getBaseUrl, getToken));
+        collaborationTools.forEach((register) =>
+          register(server, getBaseUrl, getToken)
+        );
       }).not.toThrow();
     });
 
@@ -79,7 +86,7 @@ describe('MCP Server Integration Tests', () => {
 
     it('should register exactly 11 tools in total', () => {
       registerAll();
-      expect(registeredTools).toHaveLength(11);
+      expect(registeredTools()).toHaveLength(11);
     });
 
     it('should register tools with expected names', () => {
@@ -99,8 +106,8 @@ describe('MCP Server Integration Tests', () => {
         'export-markdown',
       ];
 
-      expect(registeredTools).toEqual(expect.arrayContaining(expectedTools));
-      expect(registeredTools).toHaveLength(expectedTools.length);
+      expect(registeredTools()).toEqual(expect.arrayContaining(expectedTools));
+      expect(registeredTools()).toHaveLength(expectedTools.length);
     });
   });
 
@@ -124,23 +131,21 @@ describe('MCP Server Integration Tests', () => {
     it('should register tools with proper parameter schemas', () => {
       registerGetDocument(server, getBaseUrl, getToken);
 
-      const call = (server.tool as any).mock.calls.find(
-        (call: any) => call[0] === 'get-document'
-      );
+      const call = toolSpy.mock.calls.find(([name]) => name === 'get-document');
 
       expect(call).toBeDefined();
-      expect(call[2]).toHaveProperty('id');
+      expect(call?.[2]).toHaveProperty('id');
     });
 
     it('should register tools with proper handler functions', () => {
       registerListDocuments(server, getBaseUrl, getToken);
 
-      const call = (server.tool as any).mock.calls.find(
-        (call: any) => call[0] === 'list-documents'
+      const call = toolSpy.mock.calls.find(
+        ([name]) => name === 'list-documents'
       );
 
       expect(call).toBeDefined();
-      expect(typeof call[3]).toBe('function');
+      expect(typeof call?.[3]).toBe('function');
     });
   });
 
@@ -170,8 +175,8 @@ describe('MCP Server Integration Tests', () => {
         registerSearchDocuments(server, invalidGetBaseUrl, invalidGetToken);
       }).not.toThrow();
 
-      expect(registeredTools).toContain('duplicate-document');
-      expect(registeredTools).toContain('search-documents');
+      expect(registeredTools()).toContain('duplicate-document');
+      expect(registeredTools()).toContain('search-documents');
     });
   });
 
@@ -189,24 +194,21 @@ describe('MCP Server Integration Tests', () => {
         registerGetDocumentStatistics,
       ];
 
-      collaborationTools.forEach(registerTool => {
+      collaborationTools.forEach((registerTool) => {
         expect(() => registerTool(server, getBaseUrl, getToken)).not.toThrow();
       });
 
-      expect(registeredTools).toHaveLength(9);
+      expect(registeredTools()).toHaveLength(9);
     });
 
     it('should register all conversion API tools', () => {
-      const conversionTools = [
-        registerImportMarkdown,
-        registerExportMarkdown,
-      ];
+      const conversionTools = [registerImportMarkdown, registerExportMarkdown];
 
-      conversionTools.forEach(registerTool => {
+      conversionTools.forEach((registerTool) => {
         expect(() => registerTool(server, getBaseUrl, getToken)).not.toThrow();
       });
 
-      expect(registeredTools).toHaveLength(2);
+      expect(registeredTools()).toHaveLength(2);
     });
   });
 
@@ -230,7 +232,8 @@ describe('MCP Server Integration Tests', () => {
     });
 
     it('should handle environment variable style configuration', () => {
-      const envGetBaseUrl = () => process.env.BASE_URL || 'http://localhost:8080';
+      const envGetBaseUrl = () =>
+        process.env.BASE_URL || 'http://localhost:8080';
       const envGetToken = () => process.env.TOKEN;
 
       expect(() => {
@@ -238,8 +241,8 @@ describe('MCP Server Integration Tests', () => {
         registerImportMarkdown(server, envGetBaseUrl, envGetToken);
       }).not.toThrow();
 
-      expect(registeredTools).toContain('update-document');
-      expect(registeredTools).toContain('import-markdown');
+      expect(registeredTools()).toContain('update-document');
+      expect(registeredTools()).toContain('import-markdown');
     });
   });
 });
