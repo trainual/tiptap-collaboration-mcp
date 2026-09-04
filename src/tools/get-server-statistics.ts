@@ -1,5 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import {
+  collabFetch,
+  formatToolError,
+  readJson,
+} from '../utils/collab-request.js';
 
 export default function registerGetServerStatistics(
   server: McpServer,
@@ -12,28 +17,16 @@ export default function registerGetServerStatistics(
     {},
     async () => {
       try {
-        const headers = buildHeaders(getToken());
-
-        const response = await fetch(`${getBaseUrl()}/api/statistics`, {
-          headers,
+        const response = await collabFetch(getBaseUrl(), '/api/statistics', {
+          headers: buildHeaders(getToken()),
         });
-
-        if (!response.ok) {
-          return mcpError(
-            `Failed to retrieve server statistics. HTTP error: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const statistics = await response.json();
-
+        const statistics = await readJson(response);
         return mcpSuccess(
           `Server Statistics: ${JSON.stringify(statistics, null, 2)}`
         );
       } catch (error) {
         return mcpError(
-          `Error retrieving server statistics: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
+          formatToolError('Error retrieving server statistics', error)
         );
       }
     }

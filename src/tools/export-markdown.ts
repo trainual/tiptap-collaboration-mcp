@@ -1,15 +1,24 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import {
+  buildJsonHeaders,
+  mcpError,
+  mcpSuccess,
+} from '../utils/mcp-helpers.js';
+import { collabFetch, formatToolError } from '../utils/collab-request.js';
+
+const MISSING_TOKEN_MESSAGE =
+  'export-markdown requires CONVERT_TOKEN (a Tiptap Cloud Convert JWT). ' +
+  'Start the server with CONVERT_TOKEN <jwt> (and optionally CONVERT_URL <url>); see the README.';
 
 export default function registerExportMarkdown(
   server: McpServer,
-  getBaseUrl: () => string,
-  getToken: () => string | undefined
+  getConvertUrl: () => string,
+  getConvertToken: () => string | undefined
 ) {
   server.tool(
     'export-markdown',
-    'Export Tiptap JSON content to Markdown format',
+    'Export Tiptap JSON content to Markdown format via the Tiptap Conversion service',
     {
       content: z
         .object({})
@@ -19,45 +28,40 @@ export default function registerExportMarkdown(
         .enum(['md', 'gfm'])
         .optional()
         .describe(
-          'Output format: md (standard) or gfm (GitHub Flavored Markdown). Default: md'
+          'Accepted for backwards compatibility; the v2 Conversion API has no format switch'
         ),
       appId: z
         .string()
-        .describe('Your Tiptap App ID for the conversion service'),
+        .optional()
+        .describe('Tiptap Convert App ID (optional on the v2 API)'),
     },
-    async ({ content, format = 'md', appId }) => {
+    async ({ content, appId }) => {
+      const convertToken = getConvertToken();
+      if (!convertToken) return mcpError(MISSING_TOKEN_MESSAGE);
+
       try {
-        // Conversion API uses Bearer token (different from collaboration API which uses raw token)
-        const token = getToken();
-        const headers: Record<string, string> = {
-          'User-Agent': 'tiptap-collaboration-mcp',
-          'Content-Type': 'application/json',
-          'X-App-Id': appId,
-        };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        const response = await fetch(`${getBaseUrl()}/api/convert/export`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ content, format }),
-        });
-
-        if (!response.ok) {
-          return mcpError(
-            `Failed to export to markdown. HTTP error: ${response.status} ${response.statusText}. Make sure you have a valid JWT token and App ID for the Tiptap Conversion service.`
-          );
-        }
-
+        const response = await collabFetch(
+          getConvertUrl(),
+          '/v2/convert/export/markdown',
+          {
+            method: 'POST',
+            headers: buildJsonHeaders(
+              `Bearer ${convertToken}`,
+              appId ? { 'X-App-Id': appId } : undefined
+            ),
+            // The v2 API expects the Tiptap JSON document serialized as a string.
+            body: JSON.stringify({ doc: JSON.stringify(content) }),
+          }
+        );
         const markdownContent = await response.text();
-
         return mcpSuccess(
-          `Tiptap JSON exported to ${format.toUpperCase()} successfully:\n\n${markdownContent}`
+          `Tiptap JSON exported to Markdown successfully:\n\n${markdownContent}`
         );
       } catch (error) {
         return mcpError(
-          `Error exporting to markdown: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
+          formatToolError('Error exporting to markdown', error, {
+            401: 'Conversion service rejected the credentials - CONVERT_TOKEN must be a valid Tiptap Cloud Convert JWT.',
+          })
         );
       }
     }

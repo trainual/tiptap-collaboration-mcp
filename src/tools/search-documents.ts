@@ -5,6 +5,11 @@ import {
   mcpError,
   mcpSuccess,
 } from '../utils/mcp-helpers.js';
+import {
+  collabFetch,
+  formatToolError,
+  readJson,
+} from '../utils/collab-request.js';
 
 export default function registerSearchDocuments(
   server: McpServer,
@@ -18,35 +23,31 @@ export default function registerSearchDocuments(
       query: z.string().describe('Search query for semantic document search'),
       limit: z
         .number()
+        .int()
+        .min(1)
+        .max(100)
         .optional()
         .describe('Maximum number of results to return (default: 10)'),
     },
     async ({ query, limit = 10 }) => {
       try {
-        const headers = buildJsonHeaders(getToken());
-
-        const response = await fetch(`${getBaseUrl()}/api/search`, {
+        // Documented contract: search terms in the body as `content`,
+        // `limit` as a query parameter.
+        const response = await collabFetch(getBaseUrl(), '/api/search', {
           method: 'POST',
-          headers,
-          body: JSON.stringify({ query, limit }),
+          headers: buildJsonHeaders(getToken()),
+          body: JSON.stringify({ content: query }),
+          query: { limit },
         });
-
-        if (!response.ok) {
-          return mcpError(
-            `Search failed. HTTP error: ${response.status} ${response.statusText}. Note: Semantic search requires Tiptap Semantic Search to be enabled.`
-          );
-        }
-
-        const searchResults = await response.json();
-
+        const searchResults = await readJson(response);
         return mcpSuccess(
           `Search results for "${query}": ${JSON.stringify(searchResults, null, 2)}`
         );
       } catch (error) {
         return mcpError(
-          `Error searching documents: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
+          formatToolError('Error searching documents', error, {
+            501: 'Semantic search is not enabled on this server (it is a Tiptap Cloud restricted-beta feature).',
+          })
         );
       }
     }

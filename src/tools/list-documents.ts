@@ -1,5 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import {
+  collabFetch,
+  formatToolError,
+  readJson,
+} from '../utils/collab-request.js';
 
 export default function registerListDocuments(
   server: McpServer,
@@ -12,29 +17,15 @@ export default function registerListDocuments(
     {},
     async () => {
       try {
-        const headers = buildHeaders(getToken());
-
-        const response = await fetch(`${getBaseUrl()}/api/documents`, {
-          headers,
+        const response = await collabFetch(getBaseUrl(), '/api/documents', {
+          headers: buildHeaders(getToken()),
         });
-
-        if (!response.ok) {
-          return mcpError(
-            `Failed to retrieve documents list. HTTP error: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const documentsData = await response.json();
-
+        const documentsData = await readJson(response);
         return mcpSuccess(
           `Documents: ${JSON.stringify(documentsData, null, 2)}`
         );
       } catch (error) {
-        return mcpError(
-          `Error listing documents: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
-        );
+        return mcpError(formatToolError('Error listing documents', error));
       }
     }
   );
