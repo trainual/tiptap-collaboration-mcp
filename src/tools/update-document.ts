@@ -5,6 +5,7 @@ import {
   mcpError,
   mcpSuccess,
 } from '../utils/mcp-helpers.js';
+import { collabFetch, formatToolError } from '../utils/collab-request.js';
 
 export default function registerUpdateDocument(
   server: McpServer,
@@ -29,39 +30,26 @@ export default function registerUpdateDocument(
     },
     async ({ id, content, mode = 'replace' }) => {
       try {
-        const headers = buildJsonHeaders(getToken());
-
-        const response = await fetch(
-          `${getBaseUrl()}/api/documents/${encodeURIComponent(id)}?format=json&mode=${mode}`,
+        await collabFetch(
+          getBaseUrl(),
+          `/api/documents/${encodeURIComponent(id)}`,
           {
             method: 'PATCH',
-            headers,
+            headers: buildJsonHeaders(getToken()),
             body: JSON.stringify(content),
+            query: { format: 'json', mode },
           }
         );
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            return mcpError(`Document with ID ${id} not found.`);
-          }
-          if (response.status === 422) {
-            return mcpError(
-              `Invalid payload or update cannot be applied to document ${id}.`
-            );
-          }
-          return mcpError(
-            `Failed to update document. HTTP error: ${response.status} ${response.statusText}`
-          );
-        }
-
         return mcpSuccess(
           `Document with ID ${id} updated successfully using ${mode} mode.`
         );
       } catch (error) {
         return mcpError(
-          `Error updating document: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
+          formatToolError('Error updating document', error, {
+            404: `Document with ID ${id} not found.`,
+            409: `Document ${id} changed concurrently; retry the update.`,
+            422: `Invalid payload or update cannot be applied to document ${id}.`,
+          })
         );
       }
     }

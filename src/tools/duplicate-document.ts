@@ -6,6 +6,11 @@ import {
   mcpError,
   mcpSuccess,
 } from '../utils/mcp-helpers.js';
+import {
+  collabFetch,
+  formatToolError,
+  readJson,
+} from '../utils/collab-request.js';
 
 export default function registerDuplicateDocument(
   server: McpServer,
@@ -21,50 +26,34 @@ export default function registerDuplicateDocument(
     },
     async ({ sourceId, targetId }) => {
       try {
-        const getResponse = await fetch(
-          `${getBaseUrl()}/api/documents/${encodeURIComponent(sourceId)}`,
-          { headers: buildHeaders(getToken()) }
+        const getResponse = await collabFetch(
+          getBaseUrl(),
+          `/api/documents/${encodeURIComponent(sourceId)}`,
+          { headers: buildHeaders(getToken()), query: { format: 'json' } }
         );
+        const sourceContent = await readJson(getResponse);
 
-        if (!getResponse.ok) {
-          if (getResponse.status === 404) {
-            return mcpError(`Source document with ID ${sourceId} not found.`);
-          }
-          return mcpError(
-            `Failed to retrieve source document. HTTP error: ${getResponse.status} ${getResponse.statusText}`
-          );
-        }
-
-        const sourceContent = await getResponse.json();
-
-        const createResponse = await fetch(
-          `${getBaseUrl()}/api/documents/${encodeURIComponent(targetId)}?format=json`,
+        await collabFetch(
+          getBaseUrl(),
+          `/api/documents/${encodeURIComponent(targetId)}`,
           {
             method: 'POST',
             headers: buildJsonHeaders(getToken()),
             body: JSON.stringify(sourceContent),
+            query: { format: 'json' },
           }
         );
-
-        if (!createResponse.ok) {
-          if (createResponse.status === 409) {
-            return mcpError(
-              `Target document with ID ${targetId} already exists. Choose a different ID or delete the existing document first.`
-            );
-          }
-          return mcpError(
-            `Failed to create duplicate document. HTTP error: ${createResponse.status} ${createResponse.statusText}`
-          );
-        }
 
         return mcpSuccess(
           `Document ${sourceId} successfully duplicated to ${targetId}.`
         );
       } catch (error) {
+        // 404 can only come from the GET (POST creates), 409 only from the POST.
         return mcpError(
-          `Error duplicating document: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
+          formatToolError('Error duplicating document', error, {
+            404: `Source document with ID ${sourceId} not found.`,
+            409: `Target document with ID ${targetId} already exists. Choose a different ID or delete the existing document first.`,
+          })
         );
       }
     }
