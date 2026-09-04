@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
 import {
+  CollabHttpError,
   collabFetch,
   formatToolError,
   readJson,
@@ -22,12 +23,20 @@ export default function registerGetDocumentStatistics(
       try {
         const headers = buildHeaders(getToken());
         // The statistics endpoint returns 200 with zeroes for nonexistent
-        // documents, so check existence first.
-        await collabFetch(
-          getBaseUrl(),
-          `/api/documents/${encodeURIComponent(id)}`,
-          { method: 'HEAD', headers }
-        );
+        // documents, so check existence first. HEAD exists since server
+        // 3.91.0; older servers answer 501 - skip the check there and keep
+        // the old zeroes-for-missing behavior.
+        try {
+          await collabFetch(
+            getBaseUrl(),
+            `/api/documents/${encodeURIComponent(id)}`,
+            { method: 'HEAD', headers }
+          );
+        } catch (error) {
+          if (!(error instanceof CollabHttpError) || error.status !== 501) {
+            throw error;
+          }
+        }
 
         const response = await collabFetch(
           getBaseUrl(),
