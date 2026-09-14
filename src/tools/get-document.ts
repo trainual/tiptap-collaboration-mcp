@@ -1,6 +1,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import {
+  collabFetch,
+  formatToolError,
+  readJson,
+} from '../utils/collab-request.js';
 
 export default function registerGetDocument(
   server: McpServer,
@@ -15,29 +20,20 @@ export default function registerGetDocument(
     },
     async ({ id }) => {
       try {
-        const headers = buildHeaders(getToken());
-
-        const response = await fetch(
-          `${getBaseUrl()}/api/documents/${encodeURIComponent(id)}`,
-          { headers }
+        const response = await collabFetch(
+          getBaseUrl(),
+          `/api/documents/${encodeURIComponent(id)}`,
+          { headers: buildHeaders(getToken()), query: { format: 'json' } }
         );
-
-        if (!response.ok) {
-          return mcpError(
-            `Document with ID ${id} not found. HTTP error: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const documentData = await response.json();
-
+        const documentData = await readJson(response);
         return mcpSuccess(
           `Document Information: ${JSON.stringify(documentData, null, 2)}`
         );
       } catch (error) {
         return mcpError(
-          `Error retrieving document: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
+          formatToolError('Error retrieving document', error, {
+            404: `Document with ID ${id} not found.`,
+          })
         );
       }
     }

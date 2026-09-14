@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { buildHeaders, mcpError, mcpSuccess } from '../utils/mcp-helpers.js';
+import { collabFetch, formatToolError } from '../utils/collab-request.js';
 
 export default function registerDeleteDocument(
   server: McpServer,
@@ -15,31 +16,17 @@ export default function registerDeleteDocument(
     },
     async ({ id }) => {
       try {
-        const headers = buildHeaders(getToken());
-
-        const response = await fetch(
-          `${getBaseUrl()}/api/documents/${encodeURIComponent(id)}`,
-          {
-            method: 'DELETE',
-            headers,
-          }
+        await collabFetch(
+          getBaseUrl(),
+          `/api/documents/${encodeURIComponent(id)}`,
+          { method: 'DELETE', headers: buildHeaders(getToken()) }
         );
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            return mcpError(`Document with ID ${id} not found.`);
-          }
-          return mcpError(
-            `Failed to delete document. HTTP error: ${response.status} ${response.statusText}`
-          );
-        }
-
         return mcpSuccess(`Document with ID ${id} deleted successfully.`);
       } catch (error) {
         return mcpError(
-          `Error deleting document: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
+          formatToolError('Error deleting document', error, {
+            404: `Document with ID ${id} not found.`,
+          })
         );
       }
     }
