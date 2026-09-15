@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest --run",
+    "test:live": "vitest --run tests/live",
     "test:watch": "vitest --watch",
     "inspect": "npx @modelcontextprotocol/inspector tsx src/index.ts"
   },

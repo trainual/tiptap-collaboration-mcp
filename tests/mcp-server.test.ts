@@ -1,248 +1,60 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  vi,
-  type MockInstance,
-} from 'vitest';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { connectTestClient, type TestMcpClient } from './helpers/mcp-client.js';
+import { packageVersion } from '../src/utils/package-info.js';
 
-// Import all tool registration functions
-import registerListDocuments from '../src/tools/list-documents.js';
-import registerGetDocument from '../src/tools/get-document.js';
-import registerCreateDocument from '../src/tools/create-document.js';
-import registerUpdateDocument from '../src/tools/update-document.js';
-import registerDeleteDocument from '../src/tools/delete-document.js';
-import registerDuplicateDocument from '../src/tools/duplicate-document.js';
-import registerSearchDocuments from '../src/tools/search-documents.js';
-import registerGetServerStatistics from '../src/tools/get-server-statistics.js';
-import registerGetDocumentStatistics from '../src/tools/get-document-statistics.js';
-import registerImportMarkdown from '../src/tools/import-markdown.js';
-import registerExportMarkdown from '../src/tools/export-markdown.js';
-
-const allTools = [
-  registerListDocuments,
-  registerGetDocument,
-  registerCreateDocument,
-  registerUpdateDocument,
-  registerDeleteDocument,
-  registerDuplicateDocument,
-  registerSearchDocuments,
-  registerGetServerStatistics,
-  registerGetDocumentStatistics,
-  registerImportMarkdown,
-  registerExportMarkdown,
+const EXPECTED_TOOLS = [
+  'create-document',
+  'delete-document',
+  'duplicate-document',
+  'export-markdown',
+  'get-document',
+  'get-document-statistics',
+  'get-server-statistics',
+  'import-markdown',
+  'list-documents',
+  'search-documents',
+  'update-document',
 ];
 
-describe('MCP Server Integration Tests', () => {
-  let server: McpServer;
-  let getBaseUrl: () => string;
-  let getToken: () => string | undefined;
-  let toolSpy: MockInstance<McpServer['tool']>;
-  const registeredTools = () => toolSpy.mock.calls.map(([name]) => name);
+describe('MCP server', () => {
+  let mcp: TestMcpClient;
 
-  beforeEach(() => {
-    server = new McpServer(
-      {
-        name: 'tiptap-collaboration-mcp',
-        version: '0.0.0-test',
-      },
-      {
-        capabilities: {
-          tools: {},
-        },
-      }
-    );
-
-    getBaseUrl = vi.fn(() => 'http://localhost:8080');
-    getToken = vi.fn(() => undefined);
-    toolSpy = vi.spyOn(server, 'tool');
+  beforeAll(async () => {
+    mcp = await connectTestClient({ baseUrl: 'http://collab.test:8080' });
+  });
+  afterAll(async () => {
+    await mcp.close();
   });
 
-  function registerAll() {
-    allTools.forEach((register) => register(server, getBaseUrl, getToken));
-  }
-
-  describe('Tool Registration', () => {
-    it('should register all collaboration tools without errors', () => {
-      const collaborationTools = allTools.filter(
-        (fn) => fn !== registerImportMarkdown && fn !== registerExportMarkdown
-      );
-
-      expect(() => {
-        collaborationTools.forEach((register) =>
-          register(server, getBaseUrl, getToken)
-        );
-      }).not.toThrow();
-    });
-
-    it('should register all conversion tools without errors', () => {
-      expect(() => {
-        registerImportMarkdown(server, getBaseUrl, getToken);
-        registerExportMarkdown(server, getBaseUrl, getToken);
-      }).not.toThrow();
-    });
-
-    it('should register exactly 11 tools in total', () => {
-      registerAll();
-      expect(registeredTools()).toHaveLength(11);
-    });
-
-    it('should register tools with expected names', () => {
-      registerAll();
-
-      const expectedTools = [
-        'list-documents',
-        'get-document',
-        'create-document',
-        'update-document',
-        'delete-document',
-        'duplicate-document',
-        'search-documents',
-        'get-server-statistics',
-        'get-document-statistics',
-        'import-markdown',
-        'export-markdown',
-      ];
-
-      expect(registeredTools()).toEqual(expect.arrayContaining(expectedTools));
-      expect(registeredTools()).toHaveLength(expectedTools.length);
+  it('reports the package.json version', () => {
+    expect(mcp.client.getServerVersion()).toMatchObject({
+      name: 'tiptap-collaboration-mcp',
+      version: packageVersion,
     });
   });
 
-  describe('MCP Protocol Compliance', () => {
-    it('should initialize server with correct name and version', () => {
-      expect(server).toBeDefined();
-      expect(typeof server.tool).toBe('function');
-    });
-
-    it('should handle tool registration with proper MCP schema', () => {
-      registerCreateDocument(server, getBaseUrl, getToken);
-
-      expect(server.tool).toHaveBeenCalledWith(
-        'create-document',
-        'Create a new collaborative document',
-        expect.any(Object),
-        expect.any(Function)
-      );
-    });
-
-    it('should register tools with proper parameter schemas', () => {
-      registerGetDocument(server, getBaseUrl, getToken);
-
-      const call = toolSpy.mock.calls.find(([name]) => name === 'get-document');
-
-      expect(call).toBeDefined();
-      expect(call?.[2]).toHaveProperty('id');
-    });
-
-    it('should register tools with proper handler functions', () => {
-      registerListDocuments(server, getBaseUrl, getToken);
-
-      const call = toolSpy.mock.calls.find(
-        ([name]) => name === 'list-documents'
-      );
-
-      expect(call).toBeDefined();
-      expect(typeof call?.[3]).toBe('function');
-    });
+  it('registers exactly the expected tools', async () => {
+    const { tools } = await mcp.client.listTools();
+    expect(tools.map((tool) => tool.name).sort()).toEqual(EXPECTED_TOOLS);
   });
 
-  describe('Error Propagation', () => {
-    it('should handle invalid base URL configuration', () => {
-      const invalidGetBaseUrl = () => '';
+  it('exposes the expected input schemas', async () => {
+    const { tools } = await mcp.client.listTools();
+    const properties = (name: string) => {
+      const tool = tools.find((candidate) => candidate.name === name);
+      return Object.keys(tool?.inputSchema.properties ?? {}).sort();
+    };
 
-      expect(() => {
-        registerDeleteDocument(server, invalidGetBaseUrl, getToken);
-      }).not.toThrow();
-    });
-
-    it('should handle missing token gracefully', () => {
-      const noToken = () => undefined;
-
-      expect(() => {
-        registerCreateDocument(server, getBaseUrl, noToken);
-      }).not.toThrow();
-    });
-
-    it('should register tools even with invalid configuration', () => {
-      const invalidGetBaseUrl = () => 'not-a-url';
-      const invalidGetToken = () => 'invalid-token';
-
-      expect(() => {
-        registerDuplicateDocument(server, invalidGetBaseUrl, invalidGetToken);
-        registerSearchDocuments(server, invalidGetBaseUrl, invalidGetToken);
-      }).not.toThrow();
-
-      expect(registeredTools()).toContain('duplicate-document');
-      expect(registeredTools()).toContain('search-documents');
-    });
-  });
-
-  describe('Tool Categories', () => {
-    it('should register all collaboration API tools', () => {
-      const collaborationTools = [
-        registerListDocuments,
-        registerGetDocument,
-        registerCreateDocument,
-        registerUpdateDocument,
-        registerDeleteDocument,
-        registerDuplicateDocument,
-        registerSearchDocuments,
-        registerGetServerStatistics,
-        registerGetDocumentStatistics,
-      ];
-
-      collaborationTools.forEach((registerTool) => {
-        expect(() => registerTool(server, getBaseUrl, getToken)).not.toThrow();
-      });
-
-      expect(registeredTools()).toHaveLength(9);
-    });
-
-    it('should register all conversion API tools', () => {
-      const conversionTools = [registerImportMarkdown, registerExportMarkdown];
-
-      conversionTools.forEach((registerTool) => {
-        expect(() => registerTool(server, getBaseUrl, getToken)).not.toThrow();
-      });
-
-      expect(registeredTools()).toHaveLength(2);
-    });
-  });
-
-  describe('Configuration Handling', () => {
-    it('should use provided base URL function', () => {
-      const customBaseUrl = 'https://custom-server.example.com:9000';
-      const customGetBaseUrl = vi.fn(() => customBaseUrl);
-
-      registerGetDocumentStatistics(server, customGetBaseUrl, getToken);
-
-      expect(customGetBaseUrl).toBeDefined();
-    });
-
-    it('should use provided token function', () => {
-      const customToken = 'Bearer custom-token-123';
-      const customGetToken = vi.fn(() => customToken);
-
-      registerCreateDocument(server, getBaseUrl, customGetToken);
-
-      expect(customGetToken).toBeDefined();
-    });
-
-    it('should handle environment variable style configuration', () => {
-      const envGetBaseUrl = () =>
-        process.env.BASE_URL || 'http://localhost:8080';
-      const envGetToken = () => process.env.TOKEN;
-
-      expect(() => {
-        registerUpdateDocument(server, envGetBaseUrl, envGetToken);
-        registerImportMarkdown(server, envGetBaseUrl, envGetToken);
-      }).not.toThrow();
-
-      expect(registeredTools()).toContain('update-document');
-      expect(registeredTools()).toContain('import-markdown');
-    });
+    expect(properties('create-document')).toEqual(['content', 'name']);
+    expect(properties('get-document')).toEqual(['id']);
+    expect(properties('update-document')).toEqual(['content', 'id', 'mode']);
+    expect(properties('duplicate-document')).toEqual(['sourceId', 'targetId']);
+    expect(properties('search-documents')).toEqual(['limit', 'query']);
+    expect(properties('import-markdown')).toEqual([
+      'appId',
+      'content',
+      'format',
+    ]);
+    expect(properties('list-documents')).toEqual([]);
   });
 });
